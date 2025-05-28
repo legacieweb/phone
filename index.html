@@ -1050,37 +1050,57 @@ async function updateNavButtons() {
 // LOGIN
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+
+  const loginButton = e.target.querySelector('button[type="submit"]');
+  loginButton.disabled = true;
+  loginButton.innerText = 'Logging in...';
+
   const email = document.getElementById('loginEmail').value;
   const password = document.getElementById('loginPassword').value;
 
-  const response = await fetch('https://phone-tzua.onrender.com/api/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-  });
+  try {
+    const response = await fetch('https://phone-tzua.onrender.com/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
 
-  const result = await response.json();
+    const result = await response.json();
 
-  if (response.ok) {
-    localStorage.setItem("isLoggedIn", "true");
-    localStorage.setItem("userEmail", email); // ✅ Store email
-    alert('Login successful!');
-    closeModal('loginModal');
-    updateNavButtons();
-    window.location.href = 'https://phone.iyonicorp.com';
-  } else {
-    alert(result.error || 'Login failed. Please try again.');
+    if (response.ok) {
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("userEmail", email);
+      alert('Login successful!');
+      closeModal('loginModal');
+      updateNavButtons();
+      window.location.href = 'https://phone.iyonicorp.com';
+    } else {
+      alert(result.error || 'Login failed. Please try again.');
+      loginButton.disabled = false;
+      loginButton.innerText = 'Log In';
+    }
+  } catch (error) {
+    console.error(error);
+    alert('An error occurred. Please try again.');
+    loginButton.disabled = false;
+    loginButton.innerText = 'Log In';
   }
 });
 
   // SIGNUP
-  document.getElementById('signupForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const name = document.getElementById('signupName').value;
-    const email = document.getElementById('signupEmail').value;
-    const phone = document.getElementById('signupPhone').value;
-    const password = document.getElementById('signupPassword').value;
+document.getElementById('signupForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
 
+  const signupButton = e.target.querySelector('button[type="submit"]');
+  signupButton.disabled = true;
+  signupButton.innerText = 'Signing up...';
+
+  const name = document.getElementById('signupName').value;
+  const email = document.getElementById('signupEmail').value;
+  const phone = document.getElementById('signupPhone').value;
+  const password = document.getElementById('signupPassword').value;
+
+  try {
     const response = await fetch('https://phone-tzua.onrender.com/api/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1089,15 +1109,23 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
     if (response.ok) {
       localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("userEmail", email); // ✅ Store email
+      localStorage.setItem("userEmail", email);
       alert('Account created!');
       closeModal('signupModal');
       updateNavButtons();
       window.location.href = 'https://phone.iyonicorp.com';
     } else {
       alert('Signup failed.');
+      signupButton.disabled = false;
+      signupButton.innerText = 'Sign Up';
     }
-  });
+  } catch (error) {
+    console.error(error);
+    alert('An error occurred. Please try again.');
+    signupButton.disabled = false;
+    signupButton.innerText = 'Sign Up';
+  }
+});
 
   // SEND RESET CODE
   async function sendResetCode() {
