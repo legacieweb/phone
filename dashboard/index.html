@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard - My Orders</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .slide-in {
+      animation: slideIn 0.5s ease forwards;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    .status-pill {
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-tr from-gray-100 to-gray-200 min-h-screen text-gray-800">
+
+<header class="bg-white shadow py-4 px-6 sticky top-0 z-50">
+  <div class="max-w-6xl mx-auto flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-blue-600">📦 My Orders</h1>
+    <a href="https://phone.iyonicorp.com" class="text-sm text-blue-600 hover:underline">← Back to Store</a>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-4 py-10">
+  <div class="text-center mb-8">
+    <h2 class="text-3xl font-bold text-gray-800">Welcome to Your Order History</h2>
+    <p class="text-sm text-gray-600 mt-2">Track your phone orders in real time with stylish progress indicators.</p>
+  </div>
+
+  <div id="ordersList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Order cards injected here -->
+  </div>
+</main>
+
+<script>
+  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+  const userEmail = localStorage.getItem("userEmail");
+
+  if (!isLoggedIn || !userEmail) {
+    alert("You must be logged in to view your dashboard.");
+    window.location.href = "https://phone.iyonicorp.com";
+  }
+
+  const statusSteps = ["pending", "confirmed", "pending delivery", "on the way", "shipped"];
+  const statusColors = {
+    "pending": "bg-gray-400 text-white",
+    "confirmed": "bg-yellow-500 text-white",
+    "pending delivery": "bg-purple-500 text-white",
+    "on the way": "bg-blue-500 text-white",
+    "shipped": "bg-green-600 text-white"
+  };
+
+  async function fetchOrders() {
+    try {
+      const res = await fetch(`http://localhost:5000/api/orders?email=${encodeURIComponent(userEmail)}`);
+      if (!res.ok) throw new Error("Failed to fetch orders");
+
+      const orders = await res.json();
+      const ordersList = document.getElementById("ordersList");
+      ordersList.innerHTML = "";
+
+      if (!orders || orders.length === 0) {
+        ordersList.innerHTML = `<div class="col-span-full text-center text-gray-500">You have no orders yet.</div>`;
+        return;
+      }
+
+      orders.forEach(order => {
+        const status = order.status?.toLowerCase() || "pending";
+        const created = new Date(order.createdAt).toLocaleDateString();
+        const stepIndex = statusSteps.indexOf(status);
+
+        const progress = (stepIndex + 1) / statusSteps.length * 100;
+
+        const card = document.createElement("div");
+        card.className = "bg-white rounded-xl shadow-xl overflow-hidden transform hover:scale-[1.01] transition-all duration-300 slide-in";
+
+        card.innerHTML = `
+          <div class="h-48 bg-gray-50 flex items-center justify-center p-4">
+            <img src="${order.image}" alt="${order.product}" class="object-contain max-h-full w-auto" />
+          </div>
+          <div class="p-5">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-lg font-semibold">${order.product}</h3>
+              <span class="status-pill ${statusColors[status] || 'bg-gray-500 text-white'}">${status}</span>
+            </div>
+            <p class="text-sm text-gray-500 mb-1">📅 Ordered: <strong>${created}</strong></p>
+            <p class="text-sm text-gray-500 mb-3">💵 Price: <strong>$${order.price}</strong></p>
+
+            <div class="relative w-full h-3 bg-gray-200 rounded-full overflow-hidden mb-2">
+              <div class="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-blue-500 to-green-400 transition-all duration-500"
+                   style="width: ${progress}%"></div>
+            </div>
+
+            <div class="flex justify-between text-xs text-gray-400">
+              ${statusSteps.map((step, i) =>
+                `<span class="${i === stepIndex ? 'text-blue-600 font-semibold' : ''}">${step}</span>`).join('')
+              }
+            </div>
+          </div>
+        `;
+        ordersList.appendChild(card);
+      });
+    } catch (err) {
+      console.error("Error loading orders:", err);
+    }
+  }
+
+  fetchOrders();
+</script>
+
+</body>
+</html>

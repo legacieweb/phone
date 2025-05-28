@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Order Your Phone - PhoneMart</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+  <style>
+    .fade-in { animation: fadeIn 1s ease-in-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+<header class="bg-white shadow-sm py-4 px-6 fade-in">
+  <div class="max-w-6xl mx-auto flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-blue-600">Confirm Your Order</h1>
+    <a href="https://phone.iyonicorp.com" class="text-sm text-blue-600 hover:underline">← Back to Home</a>
+  </div>
+</header>
+
+<main class="max-w-4xl mx-auto mt-10 bg-white p-6 rounded-xl shadow-md fade-in">
+  <div id="orderContainer" class="flex flex-col sm:flex-row gap-6 items-center mb-8">
+    <!-- JS inserts here -->
+  </div>
+
+  <form id="orderForm" class="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-fadeIn">
+    <div>
+      <label class="block text-sm font-medium mb-1">Full Name</label>
+      <input type="text" id="fullName" required class="w-full border px-4 py-2 rounded-lg" placeholder="Your name" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Phone Number</label>
+      <input type="tel" id="phoneNumber" required class="w-full border px-4 py-2 rounded-lg" placeholder="e.g., +1234567890" />
+    </div>
+    <div class="col-span-2">
+      <label class="block text-sm font-medium mb-1">Physical Address</label>
+      <textarea id="physicalAddress" required class="w-full border px-4 py-2 rounded-lg h-24 resize-none" placeholder="Street, Apartment, Zip Code, etc."></textarea>
+    </div>
+
+    <!-- Location Dropdowns -->
+    <div class="col-span-2">
+      <label class="block text-sm font-medium mb-1">Country</label>
+      <select id="country" class="w-full border px-4 py-2 rounded-lg" required></select>
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">State</label>
+      <select id="state" class="w-full border px-4 py-2 rounded-lg" required></select>
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">County</label>
+      <select id="county" class="w-full border px-4 py-2 rounded-lg" required></select>
+    </div>
+
+    <!-- Payment Method -->
+    <div class="col-span-2 fade-in">
+      <label class="block text-sm font-medium mb-2">Payment Method</label>
+      <div class="space-y-2 transition-all">
+        <label><input type="radio" name="payment" value="cash" class="mr-2" required /> Cash</label>
+        <label><input type="radio" name="payment" value="mobile" class="mr-2" /> Mobile Money</label>
+        <label><input type="radio" name="payment" value="card" class="mr-2" /> Card</label>
+<label class="block mt-2 text-blue-700 font-medium">
+  <input type="checkbox" id="cod" class="mr-2 accent-blue-600" checked /> Payment on Delivery
+</label>
+      </div>
+    </div>
+
+<div class="col-span-2 text-right">
+  <button type="submit" id="submitBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-all">Place Order</button>
+</div>
+
+  </form>
+</main>
+
+<script>
+  const userEmail = localStorage.getItem("userEmail");
+  if (!userEmail) {
+    alert("You must be logged in to view the order page.");
+    window.location.href = "https://phone.iyonicorp.com";
+  }
+
+  const orderItem = JSON.parse(localStorage.getItem("orderItem"));
+  const container = document.getElementById("orderContainer");
+
+  if (!orderItem) {
+    container.innerHTML = `<p class="text-red-600">No product selected. Please go back and choose a phone.</p>`;
+  } else {
+    container.innerHTML = `
+      <img src="${orderItem.image}" class="w-40 h-40 object-contain border rounded-lg bg-gray-50 animate-bounce" />
+      <div>
+        <h3 class="text-xl font-bold mb-2">${orderItem.name}</h3>
+        <p class="text-gray-600 mb-1">Price: <span class="text-blue-600 font-semibold">$${orderItem.price}</span></p>
+        <p class="text-sm text-gray-400">Order date: ${new Date().toLocaleDateString()}</p>
+      </div>
+    `;
+  }
+
+  const locationData = {
+    "USA": {
+      "California": {
+        "Los Angeles": [],
+        "San Diego": []
+      }
+    },
+    "UK": {
+      "England": {
+        "London": [],
+        "Manchester": []
+      }
+    },
+    "Australia": {
+      "New South Wales": {
+        "Sydney": [],
+        "Newcastle": []
+      }
+    },
+    "Kenya": {
+      "Nairobi": {
+        "Westlands": [],
+        "Kibera": []
+      }
+    }
+  };
+
+  const countrySelect = document.getElementById("country");
+  const stateSelect = document.getElementById("state");
+  const countySelect = document.getElementById("county");
+
+  function populate(select, items) {
+    select.innerHTML = '<option value="">Select...</option>';
+    for (let item of Object.keys(items)) {
+      let opt = document.createElement("option");
+      opt.value = item;
+      opt.textContent = item;
+      select.appendChild(opt);
+    }
+  }
+
+  countrySelect.addEventListener("change", () => {
+    const states = locationData[countrySelect.value];
+    populate(stateSelect, states || {});
+    populate(countySelect, {});
+  });
+
+  stateSelect.addEventListener("change", () => {
+    const counties = locationData[countrySelect.value][stateSelect.value];
+    populate(countySelect, counties || {});
+  });
+
+  // Payment method logic
+  document.querySelectorAll('input[name="payment"]').forEach(input => {
+    input.addEventListener("change", () => {
+      const cod = document.getElementById("cod");
+      if (input.value === "cash") {
+        cod.checked = true;
+        cod.disabled = true;
+      } else {
+        cod.disabled = false;
+        // For mobile money, default to unchecked to force Paystack
+        cod.checked = input.value === "card";
+      }
+    });
+  });
+
+  // Load initial values
+  window.addEventListener("DOMContentLoaded", async () => {
+    populate(countrySelect, locationData);
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/user/${userEmail}`);
+      const user = await res.json();
+      if (user) {
+        document.getElementById("fullName").value = user.name || "";
+        document.getElementById("phoneNumber").value = user.phone || "";
+      }
+    } catch (err) {
+      console.warn("Failed to fetch user info:", err);
+    }
+  });
+
+  // Submit logic
+document.getElementById("orderForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const submitBtn = document.getElementById("submitBtn");
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Processing...";
+
+  const name = document.getElementById("fullName").value;
+  const phone = document.getElementById("phoneNumber").value;
+  const physicalAddress = document.getElementById("physicalAddress").value;
+  const payment = document.querySelector('input[name="payment"]:checked')?.value;
+  const paymentOnDelivery = document.getElementById("cod").checked;
+
+  if (!payment) {
+    alert("Please select a payment method.");
+    submitBtn.disabled = false;
+    submitBtn.textContent = "✅ Place Order";
+    return;
+  }
+
+  const address = `${physicalAddress}, ${countrySelect.value}, ${stateSelect.value}, ${countySelect.value}`;
+
+  const orderData = {
+    name,
+    phone,
+    address,
+    email: userEmail,
+    product: orderItem.name,
+    price: orderItem.price,
+    image: orderItem.image,
+    payment,
+    paymentOnDelivery
+  };
+
+  const finalize = () => {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "✅ Place Order";
+  }
+
+  if (payment === 'mobile' && !paymentOnDelivery) {
+    payWithPaystack(orderData, 'KES', finalize);
+  } else if (payment === 'card' && !paymentOnDelivery) {
+    payWithPaystack(orderData, 'USD', finalize);
+  } else {
+    await sendOrderToBackend(orderData);
+    finalize();
+  }
+});
+
+function payWithPaystack(order, currency = 'USD', onComplete) {
+  const conversionRates = { 'USD': 1, 'KES': 120 };
+  const convertedAmount = Math.round(order.price * conversionRates[currency]);
+
+  const handler = PaystackPop.setup({
+    key: 'pk_test_232531a5c927ef2cc67ed1b85af3f26e3b8ed2f2',
+    email: order.email,
+    amount: convertedAmount * 100,
+    currency: currency,
+    callback: function(response) {
+      alert(`Payment successful (${currency}). Ref: ${response.reference}`);
+      if (currency === 'KES') {
+        order.price = Math.round(convertedAmount / conversionRates['KES']);
+      }
+      sendOrderToBackend(order).then(onComplete);
+    },
+    onClose: function() {
+      alert('Payment window closed or canceled.');
+      if (typeof onComplete === 'function') onComplete();
+    }
+  });
+  handler.openIframe();
+}
+
+  async function sendOrderToBackend(order) {
+    try {
+      await fetch("http://localhost:5000/api/order", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(order)
+      });
+      alert("Order placed! You'll receive a confirmation email.");
+      window.location.href = "https://phone.iyonicorp.com";
+    } catch (err) {
+      console.error("❌ Failed to place order:", err);
+      alert("Failed to place order. Try again later.");
+    }
+  }
+</script>
+
+</body>
+</html>

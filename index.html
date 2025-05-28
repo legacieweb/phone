@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PhoneMart - Mobile Store</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script>
+    let currentImageIndex = 0;
+    let images = [];
+
+    function showDetails(name, desc, price, imageList, specs) {
+      images = imageList;
+      currentImageIndex = 0;
+
+      document.getElementById('modalTitle').innerText = name;
+      document.getElementById('modalDescription').innerText = desc;
+      document.getElementById('modalPrice').innerText = price;
+      document.getElementById('modalImage').src = images[currentImageIndex];
+
+      // Inject tech specs
+      const specsList = document.getElementById('modalSpecs');
+      specsList.innerHTML = '';
+      specs.forEach(spec => {
+        const li = document.createElement('li');
+        li.textContent = spec;
+        specsList.appendChild(li);
+      });
+
+      document.getElementById('detailsModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('detailsModal').classList.add('hidden');
+    }
+
+    function prevImage() {
+      currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+      document.getElementById('modalImage').src = images[currentImageIndex];
+    }
+
+    function nextImage() {
+      currentImageIndex = (currentImageIndex + 1) % images.length;
+      document.getElementById('modalImage').src = images[currentImageIndex];
+    }
+  </script>
+  <style>
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .animate-scaleIn {
+      animation: scaleIn 0.3s ease-out forwards;
+    }
+  </style>
+</head>
+
+
+<body class="bg-gray-50 text-gray-800">
+
+<!-- Header -->
+<header class="bg-white shadow-sm sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+    <!-- Logo -->
+    <a href="/" class="text-xl font-bold text-blue-600 tracking-wide">PhoneMart</a>
+
+    <!-- Nav Buttons -->
+    <div id="navButtons" class="flex gap-3">
+      <!-- Buttons will be injected dynamically -->
+    </div>
+  </div>
+</header>
+
+<!-- 🔐 Login Modal -->
+<div id="loginModal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center px-4">
+  <div class="bg-white rounded-xl p-6 w-full max-w-sm shadow-lg relative animate-scaleIn">
+    <button onclick="closeModal('loginModal')" class="absolute top-3 right-4 text-gray-500 hover:text-black text-xl font-bold">×</button>
+    <h2 class="text-lg font-semibold mb-4 text-blue-600">Log In to PhoneMart</h2>
+
+    <form id="loginForm">
+      <input type="email" id="loginEmail" placeholder="Email" required class="w-full mb-3 px-4 py-2 border rounded-lg text-sm" />
+      <input type="password" id="loginPassword" placeholder="Password" required class="w-full mb-2 px-4 py-2 border rounded-lg text-sm" />
+      <div class="text-right mb-4">
+        <button type="button" onclick="openResetPassword()" class="text-blue-600 text-xs hover:underline">Forgot Password?</button>
+      </div>
+      <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Log In</button>
+    </form>
+  </div>
+</div>
+<!-- 🔁 Reset Password Modal -->
+<div id="resetModal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center px-4">
+  <div class="bg-white rounded-xl p-6 w-full max-w-sm shadow-lg relative animate-scaleIn">
+    <button onclick="closeModal('resetModal')" class="absolute top-3 right-4 text-gray-500 hover:text-black text-xl font-bold">×</button>
+    <h2 class="text-lg font-semibold mb-4 text-blue-600">Reset Password</h2>
+
+    <form id="resetForm">
+      <input type="email" id="resetEmail" placeholder="Enter your email" required class="w-full mb-3 px-4 py-2 border rounded-lg text-sm" />
+      <button type="button" onclick="sendResetCode()" class="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mb-3">Send Verification Code</button>
+
+      <div id="codeEntrySection" class="hidden">
+        <input type="text" id="resetCode" placeholder="Enter verification code" required class="w-full mb-3 px-4 py-2 border rounded-lg text-sm" />
+        <input type="password" id="newPassword" placeholder="New Password" required class="w-full mb-4 px-4 py-2 border rounded-lg text-sm" />
+        <button type="submit" class="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Reset Password</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- 🆕 Signup Modal -->
+<div id="signupModal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center px-4">
+  <div class="bg-white rounded-xl p-6 w-full max-w-sm shadow-lg relative animate-scaleIn">
+    <button onclick="closeModal('signupModal')" class="absolute top-3 right-4 text-gray-500 hover:text-black text-xl font-bold">×</button>
+    <h2 class="text-lg font-semibold mb-4 text-blue-600">Create Your Account</h2>
+
+    <form id="signupForm">
+      <input type="text" id="signupName" placeholder="Full Name" required class="w-full mb-3 px-4 py-2 border rounded-lg text-sm" />
+      <input type="email" id="signupEmail" placeholder="Email" required class="w-full mb-3 px-4 py-2 border rounded-lg text-sm" />
+      <input type="tel" id="signupPhone" placeholder="Phone Number" required class="w-full mb-3 px-4 py-2 border rounded-lg text-sm" />
+      <input type="password" id="signupPassword" placeholder="Password" required class="w-full mb-4 px-4 py-2 border rounded-lg text-sm" />
+      <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Sign Up</button>
+    </form>
+  </div>
+</div>
+
+
+
+<!-- Hero Section with Filter + Live Result Bar -->
+<section class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-20 text-center relative overflow-hidden">
+  <div class="max-w-4xl mx-auto px-4 relative z-10">
+    <h1 class="text-4xl font-bold mb-4 animate-bounce">Discover the Best Mobile Phones</h1>
+    <p class="text-lg mb-6">Top brands. Best prices. Delivered to your doorstep.</p>
+
+    <!-- Toggle Filter Button (Visible only on mobile) -->
+    <button id="toggleFilterBtn"
+            class="sm:hidden bg-white text-blue-700 font-semibold px-4 py-2 mt-2 rounded hover:bg-blue-100 transition shadow-md">
+      📱 Search / Filter Phones
+    </button>
+
+    <!-- 📊 Filter Widget (Initially hidden on mobile) -->
+    <div id="filterSection" class="hidden sm:block backdrop-blur-md bg-white/10 border border-white/20 shadow-lg rounded-2xl px-5 py-6 max-w-3xl mx-auto mt-6 animate-scaleIn">
+      <h2 class="text-xl sm:text-2xl font-semibold text-white mb-4">Find Your Perfect Phone</h2>
+
+      <!-- Search Input -->
+      <div class="mb-3 text-left">
+        <label for="phoneSearch" class="block text-sm font-medium text-white mb-1">Search by Name</label>
+        <input type="text" id="phoneSearch" placeholder="e.g., iPhone, Galaxy..."
+               class="w-full px-4 py-2 rounded-md border border-white/30 bg-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white focus:border-white/50 transition backdrop-blur" />
+      </div>
+
+      <!-- Price Filters -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end text-left">
+        <div>
+          <label for="minPrice" class="block text-sm font-medium text-white mb-1">Min Price ($)</label>
+          <input type="number" id="minPrice" placeholder="Min"
+                 class="w-full px-3 py-2 rounded-md border border-white/30 bg-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white focus:border-white/50 transition" />
+        </div>
+        <div>
+          <label for="maxPrice" class="block text-sm font-medium text-white mb-1">Max Price ($)</label>
+          <input type="number" id="maxPrice" placeholder="Max"
+                 class="w-full px-3 py-2 rounded-md border border-white/30 bg-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white focus:border-white/50 transition" />
+        </div>
+        <div>
+          <button id="applyPriceFilter"
+                  class="w-full bg-white text-blue-600 font-semibold px-4 py-2 rounded-md hover:bg-blue-100 transition shadow-sm">
+            Apply Filters
+          </button>
+        </div>
+      </div>
+
+      <!-- 🔢 Result Indicator -->
+      <div id="resultIndicator"
+           class="hidden mt-6 animate-fadeIn flex flex-col sm:flex-row sm:items-center sm:justify-between bg-white/10 border border-white/20 px-4 py-3 rounded-xl text-white text-sm shadow-md backdrop-blur-md transition-all duration-300">
+        <p><span id="matchCount">0</span> product(s) found</p>
+        <button onclick="document.getElementById('productsSection').scrollIntoView({ behavior: 'smooth' })"
+                class="mt-2 sm:mt-0 inline-block bg-white text-blue-700 px-4 py-1.5 rounded hover:bg-blue-100 text-xs font-semibold transition">
+          View Results
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Decorative Background Glow -->
+  <div class="absolute -bottom-24 -left-20 w-96 h-96 bg-blue-400 opacity-30 rounded-full blur-3xl"></div>
+  <div class="absolute -top-16 -right-20 w-96 h-96 bg-indigo-400 opacity-30 rounded-full blur-3xl"></div>
+</section>
+
+<!-- Add animations if not already included -->
+<style>
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .animate-scaleIn {
+    animation: scaleIn 0.3s ease-out forwards;
+  }
+</style>
+
+<!-- Toggle script -->
+<script>
+  const toggleBtn = document.getElementById('toggleFilterBtn');
+  const filterSection = document.getElementById('filterSection');
+
+  toggleBtn.addEventListener('click', () => {
+    filterSection.classList.toggle('hidden');
+    filterSection.classList.add('animate-scaleIn');
+  });
+</script>
+
+<!-- 🪟 Modals (Rich, Expanded Content) -->
+<!-- HOME MODAL -->
+<div id="homeModal" class="modal hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 overflow-y-auto">
+  <div class="bg-white text-gray-800 rounded-lg p-6 w-11/12 max-w-2xl relative">
+    <button onclick="closeModal('homeModal')" class="absolute top-2 right-3 text-gray-600 hover:text-black text-xl">✖</button>
+    <h2 class="text-2xl font-bold mb-4">🏠 Welcome to PhoneMart</h2>
+    <p class="mb-3">PhoneMart is your trusted destination for all things mobile. Whether you're hunting for the latest iPhone, exploring Android alternatives, or grabbing unbeatable deals — we've got you covered.</p>
+    <p class="mb-3">💡 Our goal is simple: deliver top-tier mobile experiences at prices you’ll love — with fast delivery and unbeatable support.</p>
+    <ul class="list-disc pl-5 text-gray-700 space-y-2">
+      <li>📦 Over 500+ verified phones in stock</li>
+      <li>🏆 Trusted by over 1 million customers</li>
+      <li>🛠️ 24/7 customer service and repair partners</li>
+    </ul>
+  </div>
+</div>
+
+<!-- SHOP MODAL -->
+<div id="shopModal" class="modal hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 overflow-y-auto">
+  <div class="bg-white text-gray-800 rounded-lg p-6 w-11/12 max-w-2xl relative">
+    <button onclick="closeModal('shopModal')" class="absolute top-2 right-3 text-gray-600 hover:text-black text-xl">✖</button>
+    <h2 class="text-2xl font-bold mb-4">🛍️ Browse & Shop</h2>
+    <p class="mb-3">Explore our massive inventory of smartphones from the world’s top brands including Apple, Samsung, Google, OnePlus, Xiaomi, and more.</p>
+    <div class="grid sm:grid-cols-2 gap-4">
+      <ul class="list-disc pl-5">
+        <li>iPhones (latest + refurbished)</li>
+        <li>Android flagships</li>
+        <li>Mid-range & budget phones</li>
+      </ul>
+      <ul class="list-disc pl-5">
+        <li>Accessories & cases</li>
+        <li>Wireless earbuds & chargers</li>
+        <li>Protective screen guards</li>
+      </ul>
+    </div>
+    <p class="mt-4">All products are quality-checked, backed by a 14-day return policy, and shipped within 48 hours.</p>
+  </div>
+</div>
+
+<!-- DEALS MODAL -->
+<div id="dealsModal" class="modal hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 overflow-y-auto">
+  <div class="bg-white text-gray-800 rounded-lg p-6 w-11/12 max-w-2xl relative">
+    <button onclick="closeModal('dealsModal')" class="absolute top-2 right-3 text-gray-600 hover:text-black text-xl">✖</button>
+    <h2 class="text-2xl font-bold mb-4">🔥 Hot Deals & Offers</h2>
+    <p class="mb-3">Check out our limited-time discounts, flash sales, and seasonal promos. Our offers update daily to help you save big.</p>
+    <ul class="list-disc pl-5 space-y-2">
+      <li>💰 Up to 40% off on Android phones</li>
+      <li>📱 Trade-in deals for iPhones</li>
+      <li>🎁 Bundle discounts on accessories</li>
+      <li>🚚 Free shipping for orders over $100</li>
+    </ul>
+    <p class="mt-4 text-sm text-gray-500">* Deals are subject to availability. Terms apply.</p>
+  </div>
+</div>
+
+<!-- CONTACT MODAL -->
+<div id="contactModal" class="modal hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 overflow-y-auto">
+  <div class="bg-white text-gray-800 rounded-lg p-6 w-11/12 max-w-md relative">
+    <button onclick="closeModal('contactModal')" class="absolute top-2 right-3 text-gray-600 hover:text-black text-xl">✖</button>
+    <h2 class="text-2xl font-bold mb-4">📞 Contact Us</h2>
+    <p class="mb-2">Have questions or need help? We're here for you 24/7.</p>
+    <p>Email: <a href="mailto:support@phonemart.com" class="text-blue-600 underline">support@phonemart.com</a></p>
+    <p>Phone: <a href="tel:+1234567890" class="text-blue-600 underline">+1 (234) 567-890</a></p>
+    <p class="mt-4">Or reach us on social:</p>
+    <div class="flex space-x-4 mt-2 text-xl text-gray-700">
+      <a href="#"><i class="fab fa-facebook hover:text-blue-600"></i></a>
+      <a href="#"><i class="fab fa-twitter hover:text-blue-400"></i></a>
+      <a href="#"><i class="fab fa-instagram hover:text-pink-500"></i></a>
+    </div>
+  </div>
+</div>
+
+<!-- ❓ FAQ MODAL -->
+<div id="faqModal" class="modal hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 overflow-y-auto">
+  <div class="bg-white text-gray-800 rounded-lg p-6 w-11/12 max-w-2xl relative">
+    <button onclick="closeModal('faqModal')" class="absolute top-2 right-3 text-gray-600 hover:text-black text-xl">✖</button>
+    <h2 class="text-2xl font-bold mb-4">❓ Frequently Asked Questions</h2>
+    <div class="space-y-4">
+      <div>
+        <h3 class="font-semibold text-lg">When will I receive my order?</h3>
+        <p>Orders are typically processed within 24 hours and delivered within 2–5 business days depending on your location.</p>
+      </div>
+      <div>
+        <h3 class="font-semibold text-lg">Do you offer warranty?</h3>
+        <p>Yes, all devices come with a 1-year manufacturer warranty and a 7-day replacement guarantee from PhoneMart.</p>
+      </div>
+      <div>
+        <h3 class="font-semibold text-lg">Can I return a product?</h3>
+        <p>Yes, you may return products within 14 days of delivery. Read our <span class="text-blue-600 underline cursor-pointer" onclick="closeModal('faqModal'); openModal('shippingModal')">Returns Policy</span>.</p>
+      </div>
+      <div>
+        <h3 class="font-semibold text-lg">Is my payment information secure?</h3>
+        <p>Absolutely. We use 256-bit SSL encryption and trusted gateways like Stripe and PayPal.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 🚚 SHIPPING MODAL -->
+<div id="shippingModal" class="modal hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 overflow-y-auto">
+  <div class="bg-white text-gray-800 rounded-lg p-6 w-11/12 max-w-2xl relative">
+    <button onclick="closeModal('shippingModal')" class="absolute top-2 right-3 text-gray-600 hover:text-black text-xl">✖</button>
+    <h2 class="text-2xl font-bold mb-4">🚚 Shipping & Returns</h2>
+    <p class="mb-4">We offer fast and reliable delivery, plus an easy return process.</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <h3 class="font-semibold text-lg mb-2">Shipping</h3>
+        <ul class="list-disc pl-5 space-y-1">
+          <li>Free shipping on orders over $100</li>
+          <li>Standard delivery: 3–5 business days</li>
+          <li>Express delivery available</li>
+          <li>Tracking info provided via email/SMS</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="font-semibold text-lg mb-2">Returns</h3>
+        <ul class="list-disc pl-5 space-y-1">
+          <li>14-day easy returns</li>
+          <li>Device must be unused and in original packaging</li>
+          <li>Return shipping covered if item is defective</li>
+          <li>Refunds issued within 5–7 business days</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 🔐 PRIVACY POLICY MODAL -->
+<div id="privacyModal" class="modal hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 overflow-y-auto">
+  <div class="bg-white text-gray-800 rounded-lg p-6 w-11/12 max-w-2xl relative">
+    <button onclick="closeModal('privacyModal')" class="absolute top-2 right-3 text-gray-600 hover:text-black text-xl">✖</button>
+    <h2 class="text-2xl font-bold mb-4">🔐 Privacy Policy</h2>
+    <p class="mb-3">Your privacy is critically important to us. This policy outlines what data we collect, why, and how we use it.</p>
+    <ul class="list-disc pl-5 space-y-2">
+      <li><strong>Data Collection:</strong> We collect your name, email, shipping address, and phone number during checkout.</li>
+      <li><strong>Payment Info:</strong> Handled securely via third-party processors — never stored on our servers.</li>
+      <li><strong>Marketing:</strong> We only send promotional emails if you opt-in. You can unsubscribe at any time.</li>
+      <li><strong>Cookies:</strong> Used to enhance your experience and personalize content.</li>
+    </ul>
+    <p class="mt-4 text-sm text-gray-600">For more detailed information, please contact us at <a href="mailto:privacy@phonemart.com" class="text-blue-600 underline">privacy@phonemart.com</a>.</p>
+  </div>
+</div>
+
+<!-- 📄 TERMS OF SERVICE MODAL -->
+<div id="termsModal" class="modal hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 overflow-y-auto">
+  <div class="bg-white text-gray-800 rounded-lg p-6 w-11/12 max-w-2xl relative">
+    <button onclick="closeModal('termsModal')" class="absolute top-2 right-3 text-gray-600 hover:text-black text-xl">✖</button>
+    <h2 class="text-2xl font-bold mb-4">📄 Terms of Service</h2>
+    <p class="mb-3">By using PhoneMart, you agree to abide by the following terms and conditions.</p>
+    <ul class="list-decimal pl-5 space-y-2">
+      <li><strong>Eligibility:</strong> You must be at least 18 years old to make purchases.</li>
+      <li><strong>Usage:</strong> Do not misuse the platform for illegal activities or fraudulent transactions.</li>
+      <li><strong>Content:</strong> All product images and content are protected by copyright laws.</li>
+      <li><strong>Pricing:</strong> Prices are subject to change without prior notice.</li>
+      <li><strong>Account:</strong> You are responsible for maintaining the confidentiality of your login credentials.</li>
+    </ul>
+    <p class="mt-4 text-sm text-gray-500">Full version available upon request at <a href="mailto:legal@phonemart.com" class="text-blue-600 underline">legal@phonemart.com</a>.</p>
+  </div>
+</div>
+
+
+<script>
+  function openModal(id) {
+    document.getElementById(id).classList.remove('hidden');
+  }
+  function closeModal(id) {
+    document.getElementById(id).classList.add('hidden');
+  }
+</script>
+
+
+
+<!-- Featured Phones Section -->
+<section class="py-12 px-4 max-w-7xl mx-auto">
+  <h2 class="text-3xl font-bold mb-10 text-center text-gray-800">Featured Discounts</h2>
+
+  <!-- Carousel Container -->
+  <div id="carouselContainer"
+       class="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory md:overflow-x-visible">
+    
+    <!-- Phone Cards (repeat for each phone) -->
+    <div class="snap-start min-w-[80%] md:min-w-0 relative bg-white p-5 rounded-xl shadow-md hover:shadow-xl transition duration-300 transform hover:-translate-y-1 shrink-0 md:shrink">
+      <div class="absolute top-3 left-3 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded-full shadow">-18%</div>
+      <div class="h-48 bg-gray-100 rounded flex items-center justify-center mb-4 overflow-hidden">
+        <img src="https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-13-pro-max-01.jpg" class="object-contain h-full" />
+      </div>
+      <h3 class="text-lg font-bold text-gray-800 mb-1">iPhone 13 Pro Max</h3>
+      <p class="text-sm text-gray-400 line-through">$1099</p>
+      <p class="text-xl font-semibold text-blue-600">$899</p>
+      <div class="mt-4 flex justify-between items-center">
+        <button onclick="showDetails('iPhone 13 Pro Max', 'A15 Bionic chip, 5G, ProMotion display.', '$899', ['https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-13-pro-max-01.jpg', 'https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-13-pro-max-1.jpg', 'https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-13-pro-max-2.jpg','https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-13-pro-max-3.jpg'], ['6.7&quot; Super Retina XDR Display','A15 Bionic Chip','128GB / 256GB Storage','5G Connectivity','ProMotion 120Hz','Triple 12MP Cameras'])" class="text-blue-600 text-sm font-medium hover:underline">View Details</button>
+<button onclick="handleOrderClick('iPhone 13 Pro Max', '899', 'https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-13-pro-max-01.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+    <!-- Samsung Galaxy A54 -->
+    <div class="snap-start min-w-[80%] md:min-w-0 relative bg-white p-5 rounded-xl shadow-md hover:shadow-xl transition duration-300 transform hover:-translate-y-1 shrink-0 md:shrink">
+      <div class="absolute top-3 left-3 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded-full shadow">-15%</div>
+      <div class="h-48 bg-gray-100 rounded flex items-center justify-center mb-4 overflow-hidden">
+        <img src="https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-a54-5.jpg", class="object-contain h-full" />
+      </div>
+      <h3 class="text-lg font-bold text-gray-800 mb-1">Samsung Galaxy A54</h3>
+      <p class="text-sm text-gray-400 line-through">$529</p>
+      <p class="text-xl font-semibold text-blue-600">$449</p>
+      <div class="mt-4 flex justify-between items-center">
+        <button onclick="showDetails('Samsung Galaxy A54', '120Hz AMOLED display, 50MP camera.', '$449', ['https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-a54-5.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/samsung-galaxy-a54/lifestyle/-1024w2/gsmarena_002.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/samsung-galaxy-a54/lifestyle/-1024w2/gsmarena_004.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/samsung-galaxy-a54/lifestyle/-1024w2/gsmarena_007.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/samsung-galaxy-a54/lifestyle/-1024w2/gsmarena_012.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/samsung-galaxy-a54/lifestyle/-1024w2/gsmarena_023.jpg'], ['6.4&quot; Super AMOLED 120Hz','Exynos 1380 Processor','128GB Storage + microSD','50MP Triple Camera','5000mAh Battery','IP67 Water Resistance'])" class="text-blue-600 text-sm font-medium hover:underline">View Details</button>
+<button onclick="handleOrderClick('Samsung Galaxy A54', '449', 'https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-a54-5.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+    <!-- Google Pixel 8 -->
+    <div class="snap-start min-w-[80%] md:min-w-0 relative bg-white p-5 rounded-xl shadow-md hover:shadow-xl transition duration-300 transform hover:-translate-y-1 shrink-0 md:shrink">
+      <div class="absolute top-3 left-3 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded-full shadow">-20%</div>
+      <div class="h-48 bg-gray-100 rounded flex items-center justify-center mb-4 overflow-hidden">
+        <img src="https://fdn.gsmarena.com/imgroot/reviews/23/google-pixel-8/lifestyle/-1024w2/gsmarena_005.jpg" class="object-contain h-full" />
+      </div>
+      <h3 class="text-lg font-bold text-gray-800 mb-1">Google Pixel 8</h3>
+      <p class="text-sm text-gray-400 line-through">$999</p>
+      <p class="text-xl font-semibold text-blue-600">$799</p>
+      <div class="mt-4 flex justify-between items-center">
+        <button onclick="showDetails('Pixel 8', 'Google’s newest AI-driven smartphone.', '$799', ['https://fdn.gsmarena.com/imgroot/reviews/23/google-pixel-8/lifestyle/-1024w2/gsmarena_005.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/google-pixel-8/lifestyle/-1024w2/gsmarena_006.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/google-pixel-8/lifestyle/-1024w2/gsmarena_018.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/google-pixel-8/lifestyle/-1024w2/gsmarena_020.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/google-pixel-8/lifestyle/-1024w2/gsmarena_028.jpg', ], ['6.2&quot; OLED 120Hz Display','Google Tensor G3 Chip','128GB / 256GB Storage','AI-enhanced Camera System','Android 14 OS','IP68 Water Resistance'])" class="text-blue-600 text-sm font-medium hover:underline">View Details</button>
+<button onclick="handleOrderClick('google-pixel-8', '799', 'https://fdn.gsmarena.com/imgroot/reviews/23/google-pixel-8/lifestyle/-1024w2/gsmarena_005.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+    <!-- Galaxy S24 -->
+    <div class="snap-start min-w-[80%] md:min-w-0 relative bg-white p-5 rounded-xl shadow-md hover:shadow-xl transition duration-300 transform hover:-translate-y-1 shrink-0 md:shrink">
+      <div class="absolute top-3 left-3 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded-full shadow">-10%</div>
+      <div class="h-48 bg-gray-100 rounded flex items-center justify-center mb-4 overflow-hidden">
+        <img src="https://fdn.gsmarena.com/imgroot/reviews/24/samsung-galaxy-s24/lifestyle/-1024w2/gsmarena_005.jpg" class="object-contain h-full" />
+      </div>
+      <h3 class="text-lg font-bold text-gray-800 mb-1">Galaxy S24</h3>
+      <p class="text-sm text-gray-400 line-through">$1099</p>
+      <p class="text-xl font-semibold text-blue-600">$999</p>
+      <div class="mt-4 flex justify-between items-center">
+        <button onclick="showDetails('Galaxy S24', 'Next-gen flagship with AI features and 200MP camera.', '$999', ['https://fdn.gsmarena.com/imgroot/reviews/24/samsung-galaxy-s24/lifestyle/-1024w2/gsmarena_005.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/samsung-galaxy-s24/lifestyle/-1024w2/gsmarena_006.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/samsung-galaxy-s24/lifestyle/-1024w2/gsmarena_007.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/samsung-galaxy-s24/lifestyle/-1024w2/gsmarena_010.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/samsung-galaxy-s24/lifestyle/-1024w2/gsmarena_016.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/samsung-galaxy-s24/lifestyle/-1024w2/gsmarena_021.jpg'], ['6.8&quot; Dynamic AMOLED 2X','Snapdragon 8 Gen 3','12GB RAM','200MP Camera','5000mAh Battery','AI Tools'])" class="text-blue-600 text-sm font-medium hover:underline">View Details</button>
+<button onclick="handleOrderClick('samsung-galaxy-s24', '999', 'https://fdn.gsmarena.com/imgroot/reviews/24/samsung-galaxy-s24/lifestyle/-1024w2/gsmarena_005.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- Products Section -->
+<section id="productsSection" class="py-12 px-4 max-w-7xl mx-auto scroll-mt-20">
+  <h2 class="text-3xl font-bold mb-6 text-center">All Mobile Phones</h2>
+  <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+
+    <!-- iPhone 15 Pro Max (Premium) -->
+    <div class="phone-card bg-white p-4 rounded-xl shadow hover:shadow-lg transition border border-indigo-500 relative" data-name="iPhone 15 Pro Max" data-price="1199">
+      <span class="absolute top-2 left-2 bg-indigo-600 text-white text-xs px-2 py-0.5 rounded">Premium</span>
+      <div class="h-48 flex items-center justify-center bg-gray-100 rounded mb-4 overflow-hidden">
+        <img src="https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-15-pro-max.jpg" class="max-h-full object-contain" />
+      </div>
+      <h3 class="text-lg font-semibold">iPhone 15 Pro Max</h3>
+      <p class="text-gray-500 text-sm">$1,199</p>
+      <div class="mt-3 flex justify-between">
+        <button onclick="showDetails('iPhone 15 Pro Max', 'Titanium, USB-C, and new A17 Pro.', '$1,199',
+          ['https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-15-pro-max.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/apple-iphone-15-pro-max/lifestyle/-1024w2/gsmarena_004.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/apple-iphone-15-pro-max/lifestyle/-1024w2/gsmarena_005.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/apple-iphone-15-pro-max/lifestyle/-1024w2/gsmarena_009.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/apple-iphone-15-pro-max/lifestyle/-1024w2/gsmarena_014.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/apple-iphone-15-pro-max/lifestyle/-1024w2/gsmarena_022.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/apple-iphone-15-pro-max/lifestyle/-1024w2/gsmarena_024.jpg'],
+          ['6.7&quot; LTPO OLED 120Hz','A17 Pro Chip','USB-C','5x Periscope Zoom','Titanium Build','iOS 17'])"
+        class="text-blue-600 text-sm hover:underline">View Details</button>
+<button onclick="handleOrderClick('iPhone 15 Pro Max', '1199', 'https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-15-pro-max.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+    <!-- Galaxy Z Fold5 (Premium) -->
+    <div class="phone-card bg-white p-4 rounded-xl shadow hover:shadow-lg transition border border-indigo-500 relative" data-name="Galaxy Z Fold5" data-price="1799">
+      <span class="absolute top-2 left-2 bg-indigo-600 text-white text-xs px-2 py-0.5 rounded">Premium</span>
+      <div class="h-48 flex items-center justify-center bg-gray-100 rounded mb-4 overflow-hidden">
+        <img src="https://fdn2.gsmarena.com/vv/bigpic/samsung-galaxy-z-fold5-5g.jpg" class="max-h-full object-contain" />
+      </div>
+      <h3 class="text-lg font-semibold">Galaxy Z Fold5</h3>
+      <p class="text-gray-500 text-sm">$1,799</p>
+      <div class="mt-3 flex justify-between">
+        <button onclick="showDetails('Galaxy Z Fold5', 'Refined foldable with S Pen support.', '$1,799',
+          ['https://fdn2.gsmarena.com/vv/bigpic/samsung-galaxy-z-fold5-5g.jpg','https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-z-fold5-5g-r1.jpg','https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-z-fold5-5g-r3.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/samsung-galaxy-z-fold5/lifestyle/-1024w2/gsmarena_002.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/samsung-galaxy-z-fold5/lifestyle/-1024w2/gsmarena_013.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/samsung-galaxy-z-fold5/lifestyle/-1024w2/gsmarena_021.jpg'],
+          ['7.6&quot; Foldable AMOLED 120Hz','Snapdragon 8 Gen 2','IPX8 Rating','S Pen Support','4400mAh Battery'])"
+        class="text-blue-600 text-sm hover:underline">View Details</button>
+<button onclick="handleOrderClick('Galaxy Z Fold5', '1799', 'https://fdn2.gsmarena.com/vv/bigpic/samsung-galaxy-z-fold5-5g.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+    <!-- Huawei Mate 60 Pro+ (Premium) -->
+    <div class="phone-card bg-white p-4 rounded-xl shadow hover:shadow-lg transition border border-indigo-500 relative" data-name="Huawei Mate 60 Pro+" data-price="1299">
+      <span class="absolute top-2 left-2 bg-indigo-600 text-white text-xs px-2 py-0.5 rounded">Premium</span>
+      <div class="h-48 flex items-center justify-center bg-gray-100 rounded mb-4 overflow-hidden">
+        <img src="https://fdn2.gsmarena.com/vv/bigpic/huawei-mate-60-pro-plus.jpg" class="max-h-full object-contain" />
+      </div>
+      <h3 class="text-lg font-semibold">Huawei Mate 60 Pro+</h3>
+      <p class="text-gray-500 text-sm">$1,299</p>
+      <div class="mt-3 flex justify-between">
+        <button onclick="showDetails('Huawei Mate 60 Pro+', 'Satellite messaging & advanced optics.', '$1,299',
+          ['https://fdn2.gsmarena.com/vv/bigpic/huawei-mate-60-pro-plus.jpg', 'https://fdn2.gsmarena.com/vv/pics/huawei/huawei-mate-60-pro-plus-1.jpg','https://fdn2.gsmarena.com/vv/pics/huawei/huawei-mate-60-pro-plus-2.jpg','https://fdn2.gsmarena.com/vv/pics/huawei/huawei-mate-60-pro-plus-3.jpg'],
+          ['6.82&quot; LTPO OLED','HiSilicon Kirin 9000S','88W Charging','XMAGE Ultra Camera','Satellite Messaging'])"
+        class="text-blue-600 text-sm hover:underline">View Details</button>
+<button onclick="handleOrderClick('Huawei Mate 60 Pro+', '1299', 'https://fdn2.gsmarena.com/vv/bigpic/huawei-mate-60-pro-plus.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+  
+
+
+    <!-- OnePlus 12 -->
+    <div class="phone-card bg-white p-4 rounded-xl shadow hover:shadow-lg transition" data-name="OnePlus 12" data-price="799">
+      <div class="h-48 flex items-center justify-center bg-gray-100 rounded mb-4 overflow-hidden">
+        <img src="https://fdn2.gsmarena.com/vv/pics/oneplus/oneplus-12-1.jpg", class="max-h-full object-contain" />
+      </div>
+      <h3 class="text-lg font-semibold">OnePlus 12</h3>
+      <p class="text-gray-500 text-sm">$799</p>
+      <div class="mt-3 flex justify-between">
+        <button onclick="showDetails('OnePlus 12', 'Snapdragon 8 Gen 3 and 100W charging.', '$799',
+          ['https://fdn2.gsmarena.com/vv/pics/oneplus/oneplus-12-1.jpg','https://fdn2.gsmarena.com/vv/pics/oneplus/oneplus-12-3.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/oneplus-12/rev23/lifestyle/-1024w2/gsmarena_002.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/oneplus-12/rev23/lifestyle/-1024w2/gsmarena_006.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/oneplus-12/rev23/lifestyle/-1024w2/gsmarena_008.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/oneplus-12/rev23/lifestyle/-1024w2/gsmarena_012.jpg'],
+          ['6.82&quot; AMOLED 120Hz','Snapdragon 8 Gen 3','12/16GB RAM','100W Fast Charging','50MP Hasselblad Camera'])"
+        class="text-blue-600 text-sm hover:underline">View Details</button>
+        <button onclick="handleOrderClick('OnePlus 12', '799', 'https://fdn2.gsmarena.com/vv/pics/oneplus/oneplus-12-1.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+    <!-- Xiaomi Redmi Note 13 Pro -->
+    <div class="phone-card bg-white p-4 rounded-xl shadow hover:shadow-lg transition" data-name="Redmi Note 13 Pro" data-price="329">
+      <div class="h-48 flex items-center justify-center bg-gray-100 rounded mb-4 overflow-hidden">
+        <img src="https://fdn2.gsmarena.com/vv/pics/xiaomi/xiaomi-redmi-note-13-pro-5g-1.jpg" class="max-h-full object-contain" />
+      </div>
+      <h3 class="text-lg font-semibold">Redmi Note 13 Pro</h3>
+      <p class="text-gray-500 text-sm">$329</p>
+      <div class="mt-3 flex justify-between">
+        <button onclick="showDetails('Redmi Note 13 Pro', 'Mid-range killer with 200MP camera.', '$329',
+          ['https://fdn2.gsmarena.com/vv/pics/xiaomi/xiaomi-redmi-note-13-pro-5g-1.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/redmi-note-13-pro/lifestyle/-1024w2/gsmarena_003.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/redmi-note-13-pro/lifestyle/-1024w2/gsmarena_005.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/redmi-note-13-pro/lifestyle/-1024w2/gsmarena_008.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/redmi-note-13-pro/lifestyle/-1024w2/gsmarena_010.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/redmi-note-13-pro/lifestyle/-1024w2/gsmarena_024.jpg'],
+          ['6.67&quot; AMOLED 120Hz','Snapdragon 7s Gen 2','200MP Main Camera','67W Charging','5000mAh Battery'])"
+        class="text-blue-600 text-sm hover:underline">View Details</button>
+        <button onclick="handleOrderClick('Redmi Note 13 Pro', '329', 'https://fdn2.gsmarena.com/vv/pics/xiaomi/xiaomi-redmi-note-13-pro-5g-1.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+    <!-- iPhone SE (2022) -->
+    <div class="phone-card bg-white p-4 rounded-xl shadow hover:shadow-lg transition" data-name="iPhone SE (2022)" data-price="429">
+      <div class="h-48 flex items-center justify-center bg-gray-100 rounded mb-4 overflow-hidden">
+        <img src="https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-se-2022-0.jpg" class="max-h-full object-contain" />
+      </div>
+      <h3 class="text-lg font-semibold">iPhone SE (2022)</h3>
+      <p class="text-gray-500 text-sm">$429</p>
+      <div class="mt-3 flex justify-between">
+        <button onclick="showDetails('iPhone SE (2022)', 'Compact iPhone with A15 chip.', '$429',
+          ['https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-se-2022-0.jpg','https://fdn.gsmarena.com/imgroot/reviews/22/apple-iphone-se-2022/lifestyle/-1024w2/gsmarena_003.jpg','https://fdn.gsmarena.com/imgroot/reviews/22/apple-iphone-se-2022/lifestyle/-1024w2/gsmarena_004.jpg','https://fdn.gsmarena.com/imgroot/reviews/22/apple-iphone-se-2022/lifestyle/-1024w2/gsmarena_012.jpg','https://fdn.gsmarena.com/imgroot/reviews/22/apple-iphone-se-2022/lifestyle/-1024w2/gsmarena_027.jpg','https://fdn.gsmarena.com/imgroot/reviews/22/apple-iphone-se-2022/lifestyle/-1024w2/gsmarena_033.jpg'],
+          ['4.7&quot; Retina Display','A15 Bionic','Touch ID','64GB / 128GB / 256GB','5G Support'])"
+        class="text-blue-600 text-sm hover:underline">View Details</button>
+        <button onclick="handleOrderClick('iPhone SE (2022)', '429', 'https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-se-2022-0.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+    <!-- Motorola Edge 40 -->
+    <div class="phone-card bg-white p-4 rounded-xl shadow hover:shadow-lg transition" data-name="Motorola Edge 40" data-price="499">
+      <div class="h-48 flex items-center justify-center bg-gray-100 rounded mb-4 overflow-hidden">
+        <img src="https://fdn2.gsmarena.com/vv/pics/motorola/motorola-edge40-2.jpg" class="max-h-full object-contain" />
+      </div>
+      <h3 class="text-lg font-semibold">Motorola Edge 40</h3>
+      <p class="text-gray-500 text-sm">$499</p>
+      <div class="mt-3 flex justify-between">
+        <button onclick="showDetails('Motorola Edge 40', 'Stylish phone with curved OLED display.', '$499',
+          ['https://fdn2.gsmarena.com/vv/pics/motorola/motorola-edge40-2.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/motorola-edge-40/lifestyle/-1024w2/gsmarena_004.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/motorola-edge-40/lifestyle/-1024w2/gsmarena_007.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/motorola-edge-40/lifestyle/-1024w2/gsmarena_017.jpg',''],
+          ['6.55&quot; P-OLED 144Hz','Dimensity 8020','256GB Storage','IP68 Rating','68W Fast Charging'])"
+        class="text-blue-600 text-sm hover:underline">View Details</button>
+        <button onclick="handleOrderClick('Motorola Edge 40', '499', 'https://fdn2.gsmarena.com/vv/pics/motorola/motorola-edge40-2.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+    <!-- Asus ROG Phone 8 -->
+    <div class="phone-card bg-white p-4 rounded-xl shadow hover:shadow-lg transition" data-name="ROG Phone 8" data-price="1099">
+      <div class="h-48 flex items-center justify-center bg-gray-100 rounded mb-4 overflow-hidden">
+        <img src="https://fdn2.gsmarena.com/vv/pics/asus/asus-rog-phone-8-1.jpg" class="max-h-full object-contain" />
+      </div>
+      <h3 class="text-lg font-semibold">ROG Phone 8</h3>
+      <p class="text-gray-500 text-sm">$1099</p>
+      <div class="mt-3 flex justify-between">
+        <button onclick="showDetails('ROG Phone 8', 'Ultimate gaming phone with AirTriggers.', '$1099',
+          ['https://fdn2.gsmarena.com/vv/pics/asus/asus-rog-phone-8-1.jpg','https://fdn2.gsmarena.com/vv/pics/asus/asus-rog-phone-8-2.jpg','https://fdn2.gsmarena.com/vv/pics/asus/asus-rog-phone-8-3.jpg'],
+          ['6.78&quot; AMOLED 165Hz','Snapdragon 8 Gen 3','6000mAh Battery','AirTrigger Controls','Gaming-focused Features'])"
+        class="text-blue-600 text-sm hover:underline">View Details</button>
+        <button onclick="handleOrderClick('ROG Phone 8', '1099', 'https://fdn2.gsmarena.com/vv/pics/asus/asus-rog-phone-8-1.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+    <!-- Nokia G22 -->
+    <div class="phone-card bg-white p-4 rounded-xl shadow hover:shadow-lg transition" data-name="Nokia G22" data-price="179">
+      <div class="h-48 flex items-center justify-center bg-gray-100 rounded mb-4 overflow-hidden">
+        <img src="https://fdn2.gsmarena.com/vv/pics/nokia/nokia-g22-2023-1.jpg" class="max-h-full object-contain" />
+      </div>
+      <h3 class="text-lg font-semibold">Nokia G22</h3>
+      <p class="text-gray-500 text-sm">$179</p>
+      <div class="mt-3 flex justify-between">
+        <button onclick="showDetails('Nokia G22', 'Affordable and repair-friendly phone.', '$179',
+          ['https://fdn2.gsmarena.com/vv/pics/nokia/nokia-g22-2023-1.jpg','https://fdn2.gsmarena.com/vv/pics/nokia/nokia-g22-2023-2.jpg','https://fdn2.gsmarena.com/vv/pics/nokia/nokia-g22-2024-so-orange.jpg'],
+          ['6.52&quot; IPS LCD','Unisoc T606','50MP Camera','5000mAh Battery','iFixit DIY Repairability'])"
+        class="text-blue-600 text-sm hover:underline">View Details</button>
+        <button onclick="handleOrderClick('Nokia G22', '179', 'https://fdn2.gsmarena.com/vv/pics/nokia/nokia-g22-2023-1.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+    <!-- Sony Xperia 1 V -->
+    <div class="phone-card bg-white p-4 rounded-xl shadow hover:shadow-lg transition" data-name="Sony Xperia 1 V" data-price="1399">
+      <div class="h-48 flex items-center justify-center bg-gray-100 rounded mb-4 overflow-hidden">
+        <img src="https://fdn2.gsmarena.com/vv/pics/sony/sony-xperia-1-v-1.jpg" class="max-h-full object-contain" />
+      </div>
+      <h3 class="text-lg font-semibold">Sony Xperia 1 V</h3>
+      <p class="text-gray-500 text-sm">$1399</p>
+      <div class="mt-3 flex justify-between">
+        <button onclick="showDetails('Sony Xperia 1 V', 'Pro-level video and photo features.', '$1399',
+          ['https://fdn2.gsmarena.com/vv/pics/sony/sony-xperia-1-v-1.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/sony-xperia-1-v/lifestyle/-1024w2/gsmarena_001.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/sony-xperia-1-v/lifestyle/-1024w2/gsmarena_005.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/sony-xperia-1-v/lifestyle/-1024w2/gsmarena_021.jpg'],
+          ['6.5&quot; 4K OLED HDR','Snapdragon 8 Gen 2','12GB RAM','Triple 48MP Camera','Pro-grade Creator Tools'])"
+        class="text-blue-600 text-sm hover:underline">View Details</button>
+        <button onclick="handleOrderClick('Sony Xperia 1 V', '1399', 'https://fdn2.gsmarena.com/vv/pics/sony/sony-xperia-1-v-1.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+    <!-- Realme 12 Pro+ -->
+    <div class="phone-card bg-white p-4 rounded-xl shadow hover:shadow-lg transition" data-name="Realme 12 Pro+" data-price="379">
+      <div class="h-48 flex items-center justify-center bg-gray-100 rounded mb-4 overflow-hidden">
+        <img src="https://fdn2.gsmarena.com/vv/bigpic/realme-12-pro-plus.jpg" class="max-h-full object-contain" />
+      </div>
+      <h3 class="text-lg font-semibold">Realme 12 Pro+</h3>
+      <p class="text-gray-500 text-sm">$379</p>
+      <div class="mt-3 flex justify-between">
+        <button onclick="showDetails('Realme 12 Pro+', 'Affordable phone with a periscope lens.', '$379',
+          ['https://fdn2.gsmarena.com/vv/bigpic/realme-12-pro-plus.jpg','https://fdn2.gsmarena.com/vv/pics/realme/realme-12-pro-plus-3.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/realme-12-pro-plus/lifestyle/-1024w2/gsmarena_006.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/realme-12-pro-plus/lifestyle/-1024w2/gsmarena_020.jpg'],
+          ['6.7&quot; AMOLED 120Hz','Snapdragon 7s Gen 2','Periscope Telephoto','5000mAh Battery','67W Charging'])"
+        class="text-blue-600 text-sm hover:underline">View Details</button>
+        <button onclick="handleOrderClick('Realme 12 Pro+', '379', 'https://fdn2.gsmarena.com/vv/bigpic/realme-12-pro-plus.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+    <!-- Oppo Find X7 Ultra -->
+    <div class="phone-card bg-white p-4 rounded-xl shadow hover:shadow-lg transition" data-name="Oppo Find X7 Ultra" data-price="1199">
+      <div class="h-48 flex items-center justify-center bg-gray-100 rounded mb-4 overflow-hidden">
+      <img src="https://fdn2.gsmarena.com/vv/pics/oppo/oppo-find-x7-ultra-1.jpg" class="max-h-full object-contain" />
+      </div>
+      <h3 class="text-lg font-semibold">Oppo Find X7 Ultra</h3>
+      <p class="text-gray-500 text-sm">$1199</p>
+      <div class="mt-3 flex justify-between">
+      <button onclick="showDetails('Oppo Find X7 Ultra', 'Flagship with dual periscope cameras and Snapdragon 8 Gen 3.', '$1199',
+        ['https://fdn2.gsmarena.com/vv/pics/oppo/oppo-find-x7-ultra-1.jpg','https://fdn2.gsmarena.com/vv/pics/oppo/oppo-find-x7-ultra-2.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/oppo-find-x7-ultra/lifestyle/-1024w2/gsmarena_001.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/oppo-find-x7-ultra/lifestyle/-1024w2/gsmarena_004.jpg'],
+        ['6.82&quot; LTPO AMOLED 120Hz','Snapdragon 8 Gen 3','16GB RAM','Dual Periscope Cameras','5000mAh Battery','100W Fast Charging'])"
+      class="text-blue-600 text-sm hover:underline">View Details</button>
+      <button onclick="handleOrderClick('Oppo Find X7 Ultra', '1199', 'https://fdn2.gsmarena.com/vv/pics/oppo/oppo-find-x7-ultra-1.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+    <!-- Poco F6 Pro -->
+    <div class="phone-card bg-white p-4 rounded-xl shadow hover:shadow-lg transition" data-name="Poco F6 Pro" data-price="599">
+      <div class="h-48 flex items-center justify-center bg-gray-100 rounded mb-4 overflow-hidden">
+      <img src="https://fdn2.gsmarena.com/vv/pics/xiaomi/xiaomi-poco-f6-pro-1.jpg" class="max-h-full object-contain" />
+      </div>
+      <h3 class="text-lg font-semibold">Poco F6 Pro</h3>
+      <p class="text-gray-500 text-sm">$599</p>
+      <div class="mt-3 flex justify-between">
+      <button onclick="showDetails('Poco F6 Pro', 'Flagship killer with Snapdragon 8 Gen 2.', '$599',
+        ['https://fdn2.gsmarena.com/vv/pics/xiaomi/xiaomi-poco-f6-pro-1.jpg','https://fdn2.gsmarena.com/vv/pics/xiaomi/xiaomi-poco-f6-pro-2.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/poco-f6-pro/lifestyle/-1024w2/gsmarena_008.jpg'],
+        ['6.67&quot; AMOLED 120Hz','Snapdragon 8 Gen 2','16GB RAM','120W Fast Charging','5000mAh Battery'])"
+      class="text-blue-600 text-sm hover:underline">View Details</button>
+      <button onclick="handleOrderClick('Poco F6 Pro', '599', 'https://fdn2.gsmarena.com/vv/pics/xiaomi/xiaomi-poco-f6-pro-1.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+    <!-- Vivo X100 Pro -->
+    <div class="phone-card bg-white p-4 rounded-xl shadow hover:shadow-lg transition" data-name="Vivo X100 Pro" data-price="999">
+      <div class="h-48 flex items-center justify-center bg-gray-100 rounded mb-4 overflow-hidden">
+      <img src="https://fdn2.gsmarena.com/vv/pics/vivo/vivo-x100-pro-1.jpg" class="max-h-full object-contain" />
+      </div>
+      <h3 class="text-lg font-semibold">Vivo X100 Pro</h3>
+      <p class="text-gray-500 text-sm">$999</p>
+      <div class="mt-3 flex justify-between">
+      <button onclick="showDetails('Vivo X100 Pro', 'Flagship camera phone with Zeiss optics.', '$999',
+        ['https://fdn2.gsmarena.com/vv/pics/vivo/vivo-x100-pro-1.jpg','https://fdn2.gsmarena.com/vv/pics/vivo/vivo-x100-pro-2.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/vivo-x100-pro/lifestyle/-1024w2/gsmarena_001.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/vivo-x100-pro/lifestyle/-1024w2/gsmarena_001.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/vivo-x100-pro/lifestyle/-1024w2/gsmarena_008.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/vivo-x100-pro/lifestyle/-1024w2/gsmarena_019.jpg'],
+        ['6.78&quot; LTPO AMOLED 120Hz','Dimensity 9300','12/16GB RAM','Zeiss Triple Camera','5400mAh Battery','100W Charging'])"
+      class="text-blue-600 text-sm hover:underline">View Details</button>
+      <button onclick="handleOrderClick('Vivo X100 Pro', '999', 'https://fdn2.gsmarena.com/vv/pics/vivo/vivo-x100-pro-1.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+    <!-- Tecno Camon 30 Premier -->
+    <div class="phone-card bg-white p-4 rounded-xl shadow hover:shadow-lg transition" data-name="Tecno Camon 30 Premier" data-price="399">
+      <div class="h-48 flex items-center justify-center bg-gray-100 rounded mb-4 overflow-hidden">
+      <img src="https://fdn2.gsmarena.com/vv/pics/tecno/tecno-camon-30-premier-5g-1.jpg" class="max-h-full object-contain" />
+      </div>
+      <h3 class="text-lg font-semibold">Tecno Camon 30 Premier</h3>
+      <p class="text-gray-500 text-sm">$399</p>
+      <div class="mt-3 flex justify-between">
+      <button onclick="showDetails('Tecno Camon 30 Premier', 'Affordable phone with periscope camera.', '$399',
+        ['https://fdn2.gsmarena.com/vv/pics/tecno/tecno-camon-30-premier-5g-1.jpg','https://fdn2.gsmarena.com/vv/pics/tecno/tecno-camon-30-premier-5g-13.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/tecno-camon-30-premier/lifestyle/-1024w2/gsmarena_007.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/tecno-camon-30-premier/lifestyle/-1024w2/gsmarena_020.jpg'],
+        ['6.77&quot; AMOLED 120Hz','Dimensity 8200 Ultimate','12GB RAM','Periscope Telephoto','5000mAh Battery','70W Charging'])"
+      class="text-blue-600 text-sm hover:underline">View Details</button>
+      <button onclick="handleOrderClick('Tecno Camon 30 Premier', '399', 'https://fdn2.gsmarena.com/vv/pics/tecno/tecno-camon-30-premier-5g-1.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+    <!-- Infinix Note 40 Pro -->
+    <div class="phone-card bg-white p-4 rounded-xl shadow hover:shadow-lg transition" data-name="Infinix Note 40 Pro" data-price="299">
+      <div class="h-48 flex items-center justify-center bg-gray-100 rounded mb-4 overflow-hidden">
+      <img src="https://fdn2.gsmarena.com/vv/bigpic/infinix-note-40-pro-5g-.jpg" class="max-h-full object-contain" />
+      </div>
+      <h3 class="text-lg font-semibold">Infinix Note 40 Pro</h3>
+      <p class="text-gray-500 text-sm">$299</p>
+      <div class="mt-3 flex justify-between">
+      <button onclick="showDetails('Infinix Note 40 Pro', 'Budget phone with AMOLED display and fast charging.', '$299',
+        ['https://fdn2.gsmarena.com/vv/bigpic/infinix-note-40-pro-5g-.jpg','https://fdn2.gsmarena.com/vv/pics/infinix/infinix-note-40-pro-5g-2.jpg','https://fdn2.gsmarena.com/vv/pics/infinix/infinix-note-40-pro-5g-31.jpg','https://fdn2.gsmarena.com/vv/pics/infinix/infinix-note-40-pro-5g-4.jpg'],
+        ['6.78&quot; AMOLED 120Hz','Helio G99 Ultimate','8GB RAM','108MP Main Camera','5000mAh Battery','70W Charging'])"
+      class="text-blue-600 text-sm hover:underline">View Details</button>
+      <button onclick="handleOrderClick('Infinix Note 40 Pro', '299', 'https://fdn2.gsmarena.com/vv/bigpic/infinix-note-40-pro-5g-.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+    <!-- Samsung Galaxy S23 FE -->
+    <div class="phone-card bg-white p-4 rounded-xl shadow hover:shadow-lg transition" data-name="Samsung Galaxy S23 FE" data-price="599">
+      <div class="h-48 flex items-center justify-center bg-gray-100 rounded mb-4 overflow-hidden">
+      <img src="https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-s23-fe-1.jpg" class="max-h-full object-contain" />
+      </div>
+      <h3 class="text-lg font-semibold">Samsung Galaxy S23 FE</h3>
+      <p class="text-gray-500 text-sm">$599</p>
+      <div class="mt-3 flex justify-between">
+      <button onclick="showDetails('Samsung Galaxy S23 FE', 'Affordable flagship with triple camera.', '$599',
+        ['https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-s23-fe-1.jpg','https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-s23-fe-2.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/samsung-galaxy-s23-fe/lifestyle/-1024w2/gsmarena_001.jpg'],
+        ['6.4&quot; Dynamic AMOLED 2X','Exynos 2200','8GB RAM','Triple 50MP Camera','4500mAh Battery'])"
+      class="text-blue-600 text-sm hover:underline">View Details</button>
+      <button onclick="handleOrderClick('Samsung Galaxy S23 FE', '599', 'https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-s23-fe-1.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+    <!-- Google Pixel 7a -->
+    <div class="phone-card bg-white p-4 rounded-xl shadow hover:shadow-lg transition" data-name="Google Pixel 7a" data-price="499">
+      <div class="h-48 flex items-center justify-center bg-gray-100 rounded mb-4 overflow-hidden">
+      <img src="https://fdn2.gsmarena.com/vv/pics/google/google-pixel-7a-1.jpg" class="max-h-full object-contain" />
+      </div>
+      <h3 class="text-lg font-semibold">Google Pixel 7a</h3>
+      <p class="text-gray-500 text-sm">$499</p>
+      <div class="mt-3 flex justify-between">
+      <button onclick="showDetails('Google Pixel 7a', 'Affordable Pixel with Tensor G2 chip.', '$499',
+        ['https://fdn2.gsmarena.com/vv/pics/google/google-pixel-7a-1.jpg','https://fdn2.gsmarena.com/vv/pics/google/google-pixel-7a-2.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/google-pixel-7a/hands-on/lifestyle/-1024w2/gsmarena_001.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/google-pixel-7a/hands-on/lifestyle/-1024w2/gsmarena_006.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/google-pixel-7a/hands-on/lifestyle/-1024w2/gsmarena_007.jpg','https://fdn.gsmarena.com/imgroot/reviews/23/google-pixel-7a/hands-on/lifestyle/-1024w2/gsmarena_010.jpg'],
+        ['6.1&quot; OLED 90Hz','Google Tensor G2','8GB RAM','64MP Camera','4385mAh Battery'])"
+      class="text-blue-600 text-sm hover:underline">View Details</button>
+      <button onclick="handleOrderClick('Google Pixel 7a', '499', 'https://fdn2.gsmarena.com/vv/pics/google/google-pixel-7a-1.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+    <!-- Samsung Galaxy A35 -->
+    <div class="phone-card bg-white p-4 rounded-xl shadow hover:shadow-lg transition" data-name="Samsung Galaxy A35" data-price="399">
+      <div class="h-48 flex items-center justify-center bg-gray-100 rounded mb-4 overflow-hidden">
+      <img src="https://fdn2.gsmarena.com/vv/bigpic/samsung-galaxy-a35.jpg" class="max-h-full object-contain" />
+      </div>
+      <h3 class="text-lg font-semibold">Samsung Galaxy A35</h3>
+      <p class="text-gray-500 text-sm">$399</p>
+      <div class="mt-3 flex justify-between">
+      <button onclick="showDetails('Samsung Galaxy A35', 'Mid-range with AMOLED and 50MP camera.', '$399',
+        ['https://fdn2.gsmarena.com/vv/bigpic/samsung-galaxy-a35.jpg','https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-a35-5g-2.https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-a35-2.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/samsung-galaxy-a35/lifestyle/-1024w2/gsmarena_003.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/samsung-galaxy-a35/lifestyle/-1024w2/gsmarena_005.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/samsung-galaxy-a35/lifestyle/-1024w2/gsmarena_008.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/samsung-galaxy-a35/lifestyle/-1024w2/gsmarena_022.jpg'],
+        ['6.6&quot; Super AMOLED 120Hz','Exynos 1380','8GB RAM','50MP Triple Camera','5000mAh Battery'])"
+      class="text-blue-600 text-sm hover:underline">View Details</button>
+      <button onclick="handleOrderClick('Samsung Galaxy A35', '399', 'https://fdn2.gsmarena.com/vv/bigpic/samsung-galaxy-a35.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+    <!-- Xiaomi 14 Ultra -->
+    <div class="phone-card bg-white p-4 rounded-xl shadow hover:shadow-lg transition" data-name="Xiaomi 14 Ultra" data-price="1299">
+      <div class="h-48 flex items-center justify-center bg-gray-100 rounded mb-4 overflow-hidden">
+      <img src="https://fdn2.gsmarena.com/vv/pics/xiaomi/xiaomi-14-ultra-1.jpg" class="max-h-full object-contain" />
+      </div>
+      <h3 class="text-lg font-semibold">Xiaomi 14 Ultra</h3>
+      <p class="text-gray-500 text-sm">$1299</p>
+      <div class="mt-3 flex justify-between">
+      <button onclick="showDetails('Xiaomi 14 Ultra', 'Flagship with Leica quad camera.', '$1299',
+        ['https://fdn2.gsmarena.com/vv/pics/xiaomi/xiaomi-14-ultra-1.jpg','https://fdn2.gsmarena.com/vv/pics/xiaomi/xiaomi-14-ultra-2.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/xiaomi-14-ultra/lifestyle/-1024w2/gsmarena_001.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/xiaomi-14-ultra/lifestyle/-1024w2/gsmarena_004.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/xiaomi-14-ultra/lifestyle/-1024w2/gsmarena_006.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/xiaomi-14-ultra/lifestyle/-1024w2/gsmarena_009.jpg'],
+        ['6.73&quot; LTPO AMOLED 120Hz','Snapdragon 8 Gen 3','16GB RAM','Leica Quad Camera','5300mAh Battery'])"
+      class="text-blue-600 text-sm hover:underline">View Details</button>
+      <button onclick="handleOrderClick('Xiaomi 14 Ultra', '1299', 'https://fdn2.gsmarena.com/vv/pics/xiaomi/xiaomi-14-ultra-1.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+    <!-- Honor Magic6 Pro -->
+    <div class="phone-card bg-white p-4 rounded-xl shadow hover:shadow-lg transition" data-name="Honor Magic6 Pro" data-price="1099">
+      <div class="h-48 flex items-center justify-center bg-gray-100 rounded mb-4 overflow-hidden">
+      <img src="https://fdn2.gsmarena.com/vv/pics/honor/honor-magic6-pro-1.jpg" class="max-h-full object-contain" />
+      </div>
+      <h3 class="text-lg font-semibold">Honor Magic6 Pro</h3>
+      <p class="text-gray-500 text-sm">$1099</p>
+      <div class="mt-3 flex justify-between">
+      <button onclick="showDetails('Honor Magic6 Pro', 'Flagship with 180MP periscope camera.', '$1099',
+        ['https://fdn2.gsmarena.com/vv/pics/honor/honor-magic6-pro-1.jpg','https://fdn2.gsmarena.com/vv/pics/honor/honor-magic6-pro-2.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/honor-magic6-pro/lifestyle/-1024w2/gsmarena_001.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/honor-magic6-pro/lifestyle/-1024w2/gsmarena_004.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/honor-magic6-pro/lifestyle/-1024w2/gsmarena_010.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/honor-magic6-pro/lifestyle/-1024w2/gsmarena_015.jpg'],
+        ['6.8&quot; LTPO OLED 120Hz','Snapdragon 8 Gen 3','12/16GB RAM','180MP Periscope Camera','5600mAh Battery'])"
+      class="text-blue-600 text-sm hover:underline">View Details</button>
+      <button onclick="handleOrderClick('Honor Magic6 Pro', '1099', 'https://fdn2.gsmarena.com/vv/pics/honor/honor-magic6-pro-1.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+    <!-- Realme GT 6 -->
+    <div class="phone-card bg-white p-4 rounded-xl shadow hover:shadow-lg transition" data-name="Realme GT 6" data-price="499">
+      <div class="h-48 flex items-center justify-center bg-gray-100 rounded mb-4 overflow-hidden">
+      <img src="https://fdn2.gsmarena.com/vv/pics/realme/realme-gt6-1.jpg" class="max-h-full object-contain" />
+      </div>
+      <h3 class="text-lg font-semibold">Realme GT 6</h3>
+      <p class="text-gray-500 text-sm">$499</p>
+      <div class="mt-3 flex justify-between">
+      <button onclick="showDetails('Realme GT 6', 'Performance phone with 120W charging.', '$499',
+        ['https://fdn2.gsmarena.com/vv/pics/realme/realme-gt6-1.jpg','https://fdn2.gsmarena.com/vv/pics/realme/realme-gt6-2.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/realme-gt-6/lifestyle/-1024w2/gsmarena_003.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/realme-gt-6/lifestyle/-1024w2/gsmarena_004.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/realme-gt-6/lifestyle/-1024w2/gsmarena_007.jpg'],
+        ['6.78&quot; AMOLED 120Hz','Snapdragon 8s Gen 3','12GB RAM','50MP Camera','120W Fast Charging'])"
+      class="text-blue-600 text-sm hover:underline">View Details</button>
+      <button onclick="handleOrderClick('Realme GT 6', '499', 'https://fdn2.gsmarena.com/vv/pics/realme/realme-gt6-1.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+    <!-- Motorola Moto G Power (2024) -->
+    <div class="phone-card bg-white p-4 rounded-xl shadow hover:shadow-lg transition" data-name="Moto G Power (2024)" data-price="199">
+      <div class="h-48 flex items-center justify-center bg-gray-100 rounded mb-4 overflow-hidden">
+      <img src="https://fdn2.gsmarena.com/vv/pics/motorola/motorola-moto-g-power-2024-1.jpg" class="max-h-full object-contain" />
+      </div>
+      <h3 class="text-lg font-semibold">Moto G Power (2024)</h3>
+      <p class="text-gray-500 text-sm">$199</p>
+      <div class="mt-3 flex justify-between">
+      <button onclick="showDetails('Moto G Power (2024)', 'Budget phone with huge battery.', '$199',
+        ['https://fdn2.gsmarena.com/vv/pics/motorola/motorola-moto-g-power-2024-1.jpg','https://fdn2.gsmarena.com/vv/pics/motorola/motorola-moto-g-power-2024-2.jpg','https://fdn2.gsmarena.com/vv/pics/motorola/motorola-moto-g-power-2024-0.jpg'],
+        ['6.7&quot; IPS LCD','Helio G85','8GB RAM','50MP Camera','5000mAh Battery'])"
+      class="text-blue-600 text-sm hover:underline">View Details</button>
+      <button onclick="handleOrderClick('Moto G Power (2024)', '199', 'https://fdn2.gsmarena.com/vv/pics/motorola/motorola-moto-g-power-2024-1.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+    <!-- Tecno Spark 20 Pro+ -->
+    <div class="phone-card bg-white p-4 rounded-xl shadow hover:shadow-lg transition" data-name="Tecno Spark 20 Pro+" data-price="229">
+      <div class="h-48 flex items-center justify-center bg-gray-100 rounded mb-4 overflow-hidden">
+      <img src="https://fdn2.gsmarena.com/vv/pics/tecno/tecno-spark-20-pro-plus-1.jpg" class="max-h-full object-contain" />
+      </div>
+      <h3 class="text-lg font-semibold">Tecno Spark 20 Pro+</h3>
+      <p class="text-gray-500 text-sm">$229</p>
+      <div class="mt-3 flex justify-between">
+      <button onclick="showDetails('Tecno Spark 20 Pro+', 'Budget phone with 108MP camera.', '$229',
+        ['https://fdn2.gsmarena.com/vv/pics/tecno/tecno-spark-20-pro-plus-1.jpg','https://fdn2.gsmarena.com/vv/pics/tecno/tecno-spark-20-pro-plus-2.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/tecno-spark-20-pro-plus/lifestyle/-1024w2/gsmarena_005.jpg','https://fdn.gsmarena.com/imgroot/reviews/24/tecno-spark-20-pro-plus/lifestyle/-1024w2/gsmarena_008.jpg'],
+        ['6.78&quot; AMOLED 120Hz','Helio G99 Ultimate','8GB RAM','108MP Camera','5000mAh Battery'])"
+      class="text-blue-600 text-sm hover:underline">View Details</button>
+      <button onclick="handleOrderClick('Tecno Spark 20 Pro+', '229', 'https://fdn2.gsmarena.com/vv/pics/tecno/tecno-spark-20-pro-plus-1.jpg')" class="bg-blue-600 text-white text-sm px-4 py-1 rounded hover:bg-blue-700">Order</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+
+<!-- Modal -->
+<div id="detailsModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden px-2">
+  <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 animate-scaleIn">
+
+    <!-- Top-right Close (desktop) -->
+    <button class="absolute top-3 right-4 text-gray-500 hover:text-black text-2xl font-bold" onclick="closeProductModal()">×</button>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Carousel -->
+      <div class="relative">
+        <div class="rounded-xl overflow-hidden h-64 sm:h-80 md:h-[400px] bg-gray-100 flex items-center justify-center">
+          <img id="modalImage" src="" alt="Product Image" class="max-h-full max-w-full object-contain transition-all duration-300" />
+        </div>
+        <button onclick="prevImage()" class="absolute top-1/2 left-2 transform -translate-y-1/2 bg-black/60 text-white p-2 rounded-full hover:bg-black transition">←</button>
+        <button onclick="nextImage()" class="absolute top-1/2 right-2 transform -translate-y-1/2 bg-black/60 text-white p-2 rounded-full hover:bg-black transition">→</button>
+      </div>
+
+      <!-- Info -->
+      <div>
+        <h3 id="modalTitle" class="text-2xl font-bold text-gray-800 mb-2">Product Title</h3>
+        <p id="modalDescription" class="text-gray-700 mb-4 text-sm">Description appears here.</p>
+        <p id="modalPrice" class="text-xl font-semibold text-blue-600 mb-4"></p>
+
+        <div class="border-t pt-4">
+          <h4 class="text-lg font-semibold mb-2 text-gray-800">Technical Specs</h4>
+          <ul id="modalSpecs" class="list-disc list-inside text-gray-600 text-sm space-y-1 mb-4">
+            <!-- Injected via JS -->
+          </ul>
+        </div>
+
+        <!-- Bottom Close Button (mobile-friendly) -->
+        <div class="mt-6 sm:hidden">
+          <button onclick="closeProductModal()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-semibold py-2 rounded-lg transition">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<footer class="bg-gray-900 text-white pt-12 pb-6 mt-16">
+  <div class="max-w-6xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 text-sm">
+    
+    <!-- About -->
+    <div>
+      <h3 class="text-lg font-semibold mb-4">📱 About PhoneMart</h3>
+      <p class="text-gray-400">Your trusted source for the latest smartphones. Unbeatable deals. Fast delivery. Hassle-free experience.</p>
+    </div>
+
+    <!-- Quick Links -->
+    <div>
+      <h3 class="text-lg font-semibold mb-4">🔗 Quick Links</h3>
+      <ul class="space-y-2 text-gray-400">
+        <li><button onclick="openModal('homeModal')" class="hover:text-white transition">Home</button></li>
+        <li><button onclick="openModal('shopModal')" class="hover:text-white transition">Shop</button></li>
+        <li><button onclick="openModal('dealsModal')" class="hover:text-white transition">Deals</button></li>
+        <li><button onclick="openModal('contactModal')" class="hover:text-white transition">Contact Us</button></li>
+      </ul>
+    </div>
+
+    <!-- Support -->
+    <div>
+      <h3 class="text-lg font-semibold mb-4">🛠️ Support</h3>
+      <ul class="space-y-2 text-gray-400">
+        <li><button onclick="openModal('faqModal')" class="hover:text-white transition">FAQs</button></li>
+        <li><button onclick="openModal('shippingModal')" class="hover:text-white transition">Shipping & Returns</button></li>
+        <li><button onclick="openModal('privacyModal')" class="hover:text-white transition">Privacy Policy</button></li>
+        <li><button onclick="openModal('termsModal')" class="hover:text-white transition">Terms of Service</button></li>
+      </ul>
+    </div>
+
+    <!-- Social & Newsletter -->
+    <div>
+      <h3 class="text-lg font-semibold mb-4">📬 Stay in the Loop</h3>
+      <form class="mb-3">
+        <input type="email" placeholder="Enter your email"
+               class="w-full px-3 py-2 rounded-md bg-gray-800 text-white border border-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <button type="submit"
+                class="mt-2 w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded transition">
+          Subscribe
+        </button>
+      </form>
+      <div class="flex space-x-4 mt-4 text-lg">
+        <a href="#" class="hover:text-blue-400"><i class="fab fa-facebook-f"></i></a>
+        <a href="#" class="hover:text-blue-300"><i class="fab fa-twitter"></i></a>
+        <a href="#" class="hover:text-pink-400"><i class="fab fa-instagram"></i></a>
+        <a href="#" class="hover:text-red-500"><i class="fab fa-youtube"></i></a>
+      </div>
+    </div>
+  </div>
+
+  <hr class="my-6 border-gray-700 max-w-6xl mx-auto" />
+  <div class="text-center text-gray-500 text-xs">
+    <p>&copy; 2025 PhoneMart. All rights reserved.</p>
+    <p>Built with 💙 by the PhoneMart Team.</p>
+  </div>
+</footer>
+
+
+<script>
+  const phoneCards = document.querySelectorAll('.phone-card');
+  const searchInput = document.getElementById('phoneSearch');
+  const minPriceInput = document.getElementById('minPrice');
+  const maxPriceInput = document.getElementById('maxPrice');
+  const applyPriceButton = document.getElementById('applyPriceFilter');
+
+  const resultIndicator = document.getElementById('resultIndicator');
+  const matchCount = document.getElementById('matchCount');
+
+  function filterPhones() {
+    const query = searchInput.value.trim().toLowerCase();
+    const hasMin = minPriceInput.value.trim() !== "";
+    const hasMax = maxPriceInput.value.trim() !== "";
+    const minPrice = parseFloat(minPriceInput.value) || 0;
+    const maxPrice = parseFloat(maxPriceInput.value) || Infinity;
+
+    let visibleCount = 0;
+
+    phoneCards.forEach(card => {
+      const name = card.dataset.name.toLowerCase();
+      const price = parseFloat(card.dataset.price);
+      const matchesName = name.includes(query);
+      const matchesPrice = price >= minPrice && price <= maxPrice;
+      const shouldShow = matchesName && matchesPrice;
+
+      card.style.display = shouldShow ? 'block' : 'none';
+      if (shouldShow) visibleCount++;
+    });
+
+    matchCount.textContent = visibleCount;
+
+    const shouldShowResult = query.length > 0 || hasMin || hasMax;
+    resultIndicator.classList.toggle('hidden', !shouldShowResult);
+  }
+
+  searchInput.addEventListener('input', filterPhones);
+  applyPriceButton.addEventListener('click', filterPhones);
+</script>
+<script>
+  const navButtons = document.getElementById('navButtons');
+
+async function updateNavButtons() {
+  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+  const userEmail = localStorage.getItem("userEmail");
+
+  if (isLoggedIn && userEmail) {
+    try {
+      const res = await fetch(`http://localhost:5000/api/user-status?email=${encodeURIComponent(userEmail)}`);
+      const data = await res.json();
+      if (data.suspended) {
+        alert("🚫 Your account has been suspended.");
+        logoutUser();
+        return;
+      }
+    } catch (err) {
+      console.error("❌ Error checking suspension status:", err);
+    }
+  }
+    navButtons.innerHTML = isLoggedIn ? `
+      <a href="./dashboard" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">Dashboard</a>
+      <button onclick="logoutUser()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm font-semibold px-4 py-2 rounded-lg">Logout</button>
+    ` : `
+      <button onclick="showModal('signupModal')" class="bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 text-sm font-semibold px-4 py-2 rounded-lg">Sign Up</button>
+      <button onclick="showModal('loginModal')" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">Log In</button>
+    `;
+  }
+
+  function showModal(id) {
+    document.getElementById(id).classList.remove('hidden');
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.add('hidden');
+  }
+
+  function openResetPassword() {
+    closeModal('loginModal');
+    showModal('resetModal');
+  }
+
+  function logoutUser() {
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("userEmail");
+    alert("You have been logged out.");
+    updateNavButtons();
+    window.location.href = "https://phone.iyonicorp.com";
+  }
+
+// LOGIN
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+
+  const response = await fetch('http://localhost:5000/api/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+
+  const result = await response.json();
+
+  if (response.ok) {
+    localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("userEmail", email); // ✅ Store email
+    alert('Login successful!');
+    closeModal('loginModal');
+    updateNavButtons();
+    window.location.href = 'https://phone.iyonicorp.com';
+  } else {
+    alert(result.error || 'Login failed. Please try again.');
+  }
+});
+
+  // SIGNUP
+  document.getElementById('signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('signupName').value;
+    const email = document.getElementById('signupEmail').value;
+    const phone = document.getElementById('signupPhone').value;
+    const password = document.getElementById('signupPassword').value;
+
+    const response = await fetch('http://localhost:5000/api/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, phone, password })
+    });
+
+    if (response.ok) {
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("userEmail", email); // ✅ Store email
+      alert('Account created!');
+      closeModal('signupModal');
+      updateNavButtons();
+      window.location.href = 'https://phone.iyonicorp.com';
+    } else {
+      alert('Signup failed.');
+    }
+  });
+
+  // SEND RESET CODE
+  async function sendResetCode() {
+    const email = document.getElementById('resetEmail').value;
+
+    const response = await fetch('http://localhost:5000/api/request-reset-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+
+    if (response.ok) {
+      alert('Verification code sent to your email.');
+      document.getElementById('codeEntrySection').classList.remove('hidden');
+    } else {
+      alert('Failed to send code. Please try again.');
+    }
+  }
+
+  // RESET PASSWORD
+  document.getElementById('resetForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('resetEmail').value;
+    const code = document.getElementById('resetCode').value;
+    const newPassword = document.getElementById('newPassword').value;
+
+    const response = await fetch('http://localhost:5000/api/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, code, newPassword })
+    });
+
+    if (response.ok) {
+      alert('Password updated successfully!');
+      closeModal('resetModal');
+    } else {
+      alert('Verification failed or invalid code.');
+    }
+  });
+
+  // Init
+  updateNavButtons();
+</script>
+
+
+
+<script>
+  function closeProductModal() {
+    document.getElementById('detailsModal').classList.add('hidden');
+  }
+</script>
+
+<script>
+  function handleOrderClick(name, price, image) {
+    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+
+    if (!isLoggedIn) {
+      alert("Please log in to continue your order.");
+      showModal('loginModal');
+      return;
+    }
+
+    localStorage.setItem("orderItem", JSON.stringify({ name, price, image }));
+    window.location.href = "./order";
+  }
+</script>
+
+
+</body>
+</html>
