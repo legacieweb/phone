@@ -48,8 +48,8 @@
 <script>
   async function fetchAdminData() {
     try {
-      const orders = await fetch('http://localhost:5000/api/admin/orders').then(res => res.json());
-      const users = await fetch('http://localhost:5000/api/admin/users').then(res => res.json());
+      const orders = await fetch('https://phone-tzua.onrender.com/api/admin/orders').then(res => res.json());
+      const users = await fetch('https://phone-tzua.onrender.com/api/admin/users').then(res => res.json());
 
       renderOrders(orders);
       renderUsers(users);
@@ -130,7 +130,7 @@ function renderUsers(users) {
 
   async function toggleSuspend(userId, suspend) {
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/user/${userId}/suspend`, {
+      const res = await fetch(`https://phone-tzua.onrender.com/api/admin/user/${userId}/suspend`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ suspend })
@@ -145,7 +145,7 @@ function renderUsers(users) {
 
   async function updateStatus(id, status) {
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/order/${id}/status`, {
+      const res = await fetch(`https://phone-tzua.onrender.com/api/admin/order/${id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })
@@ -181,7 +181,7 @@ document.querySelector('main').style.display = 'none';
 async function verifyPassword() {
   const password = document.getElementById('adminPassword').value;
 
-  const res = await fetch('http://localhost:5000/api/admin/login', {
+  const res = await fetch('https://phone-tzua.onrender.com/api/admin/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

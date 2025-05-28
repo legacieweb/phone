@@ -171,7 +171,7 @@
     populate(countrySelect, locationData);
 
     try {
-      const res = await fetch(`http://localhost:5000/api/user/${userEmail}`);
+      const res = await fetch(`https://phone-tzua.onrender.com/api/user/${userEmail}`);
       const user = await res.json();
       if (user) {
         document.getElementById("fullName").value = user.name || "";
@@ -257,7 +257,7 @@ function payWithPaystack(order, currency = 'USD', onComplete) {
 
   async function sendOrderToBackend(order) {
     try {
-      await fetch("http://localhost:5000/api/order", {
+      await fetch("https://phone-tzua.onrender.com/api/order", {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(order)
