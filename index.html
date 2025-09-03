@@ -1044,7 +1044,7 @@ async function updateNavButtons() {
     localStorage.removeItem("userEmail");
     alert("You have been logged out.");
     updateNavButtons();
-    window.location.href = "https://phone.iyonicorp.com";
+    window.location.href = "https://phones.iyonicorp.com";
   }
 
 // LOGIN
@@ -1113,7 +1113,7 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
       alert('Account created!');
       closeModal('signupModal');
       updateNavButtons();
-      window.location.href = 'https://phone.iyonicorp.com';
+      window.location.href = 'https://phones.iyonicorp.com';
     } else {
       alert('Signup failed.');
       signupButton.disabled = false;
