@@ -2,124 +2,333 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Dashboard - My Orders</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .slide-in {
-      animation: slideIn 0.5s ease forwards;
-    }
-    .scrollbar-hide::-webkit-scrollbar {
-      display: none;
-    }
-    .status-pill {
-      padding: 0.25rem 0.6rem;
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      font-weight: 500;
-      transition: all 0.3s ease;
-    }
-  </style>
+  <title>Dashboard - My Orders | Mysticphones</title>
+  <link rel="stylesheet" href="../output.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
-<body class="bg-gradient-to-tr from-gray-100 to-gray-200 min-h-screen text-gray-800">
+<body class="bg-slate-50 text-slate-900 font-sans antialiased">
+  <!-- Header -->
+  <header class="bg-white shadow-sm border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+          <div class="bg-slate-900 p-2 rounded-lg">
+            <i class="fas fa-box text-white text-xl"></i>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold text-slate-900">My Orders</h1>
+            <p class="text-sm text-slate-600">Track your purchases</p>
+          </div>
+        </div>
+        <a href="https://phone.iyonicorp.com" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-semibold transition-colors flex items-center space-x-2">
+          <i class="fas fa-arrow-left"></i>
+          <span>Back to Store</span>
+        </a>
+      </div>
+    </div>
+  </header>
 
-<header class="bg-white shadow py-4 px-6 sticky top-0 z-50">
-  <div class="max-w-6xl mx-auto flex justify-between items-center">
-    <h1 class="text-2xl font-bold text-blue-600">📦 My Orders</h1>
-    <a href="https://phone.iyonicorp.com" class="text-sm text-blue-600 hover:underline">← Back to Store</a>
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Welcome Section -->
+    <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-2xl p-8 mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-3xl font-bold mb-2">Welcome back!</h2>
+          <p class="text-slate-300">Here's an overview of your recent orders and account activity.</p>
+        </div>
+        <div class="hidden md:block">
+          <i class="fas fa-shopping-bag text-6xl text-slate-400 opacity-50"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-slate-600">Total Orders</p>
+            <p class="text-2xl font-bold text-slate-900" id="totalOrders">0</p>
+          </div>
+          <div class="bg-blue-100 p-3 rounded-lg">
+            <i class="fas fa-shopping-cart text-blue-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-slate-600">Completed</p>
+            <p class="text-2xl font-bold text-green-600" id="completedOrders">0</p>
+          </div>
+          <div class="bg-green-100 p-3 rounded-lg">
+            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-slate-600">In Transit</p>
+            <p class="text-2xl font-bold text-blue-600" id="inTransitOrders">0</p>
+          </div>
+          <div class="bg-blue-100 p-3 rounded-lg">
+            <i class="fas fa-truck text-blue-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-slate-600">Total Spent</p>
+            <p class="text-2xl font-bold text-purple-600" id="totalSpent">$0</p>
+          </div>
+          <div class="bg-purple-100 p-3 rounded-lg">
+            <i class="fas fa-dollar-sign text-purple-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Orders Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+      <div class="p-6 border-b border-slate-200">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <i class="fas fa-list text-slate-600 text-xl"></i>
+            <h2 class="text-xl font-bold text-slate-900">Order History</h2>
+          </div>
+          <button onclick="fetchOrders()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg transition-colors">
+            <i class="fas fa-sync-alt mr-2"></i>Refresh
+          </button>
+        </div>
+      </div>
+
+      <div id="ordersList" class="p-6">
+        <!-- Orders will be populated here -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="hidden p-12 text-center">
+        <div class="bg-slate-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+          <i class="fas fa-shopping-bag text-slate-400 text-3xl"></i>
+        </div>
+        <h3 class="text-xl font-semibold text-slate-900 mb-2">No orders yet</h3>
+        <p class="text-slate-600 mb-6">You haven't placed any orders. Start shopping to see your orders here!</p>
+        <a href="https://phone.iyonicorp.com" class="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-lg font-semibold transition-colors inline-flex items-center space-x-2">
+          <i class="fas fa-shopping-cart"></i>
+          <span>Start Shopping</span>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Order Status Modal -->
+  <div id="statusModal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl">
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-info-circle text-blue-600 text-2xl"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-900">Order Status</h2>
+        <p class="text-slate-600 mt-2">Track your order progress</p>
+      </div>
+
+      <div id="statusContent" class="space-y-4">
+        <!-- Status content will be populated here -->
+      </div>
+
+      <div class="mt-6 text-center">
+        <button onclick="closeStatusModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+          Close
+        </button>
+      </div>
+    </div>
   </div>
-</header>
 
-<main class="max-w-6xl mx-auto px-4 py-10">
-  <div class="text-center mb-8">
-    <h2 class="text-3xl font-bold text-gray-800">Welcome to Your Order History</h2>
-    <p class="text-sm text-gray-600 mt-2">Track your phone orders in real time with stylish progress indicators.</p>
-  </div>
+  <script>
+    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    const userEmail = localStorage.getItem("userEmail");
 
-  <div id="ordersList" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-    <!-- Order cards injected here -->
-  </div>
-</main>
+    if (!isLoggedIn || !userEmail) {
+      alert("You must be logged in to view your dashboard.");
+      window.location.href = "https://phone.iyonicorp.com";
+    }
 
-<script>
-  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-  const userEmail = localStorage.getItem("userEmail");
+    const statusSteps = ["pending", "confirmed", "pending delivery", "on the way", "shipped"];
+    const statusColors = {
+      "pending": "bg-gray-100 text-gray-800",
+      "confirmed": "bg-yellow-100 text-yellow-800",
+      "pending delivery": "bg-blue-100 text-blue-800",
+      "on the way": "bg-purple-100 text-purple-800",
+      "shipped": "bg-green-100 text-green-800",
+      "cancelled": "bg-red-100 text-red-800"
+    };
 
-  if (!isLoggedIn || !userEmail) {
-    alert("You must be logged in to view your dashboard.");
-    window.location.href = "https://phone.iyonicorp.com";
-  }
+    const statusIcons = {
+      "pending": "fas fa-clock",
+      "confirmed": "fas fa-check-circle",
+      "pending delivery": "fas fa-box",
+      "on the way": "fas fa-truck",
+      "shipped": "fas fa-check-double",
+      "cancelled": "fas fa-times-circle"
+    };
 
-  const statusSteps = ["pending", "confirmed", "pending delivery", "on the way", "shipped"];
-  const statusColors = {
-    "pending": "bg-gray-400 text-white",
-    "confirmed": "bg-yellow-500 text-white",
-    "pending delivery": "bg-purple-500 text-white",
-    "on the way": "bg-blue-500 text-white",
-    "shipped": "bg-green-600 text-white"
-  };
+    async function fetchOrders() {
+      try {
+        const res = await fetch(`https://phone-tzua.onrender.com/api/orders?email=${encodeURIComponent(userEmail)}`);
+        if (!res.ok) throw new Error("Failed to fetch orders");
 
-  async function fetchOrders() {
-    try {
-      const res = await fetch(`https://phone-tzua.onrender.com/api/orders?email=${encodeURIComponent(userEmail)}`);
-      if (!res.ok) throw new Error("Failed to fetch orders");
+        const orders = await res.json();
+        updateStats(orders);
+        renderOrders(orders);
+      } catch (err) {
+        console.error("Error loading orders:", err);
+        showNotification("Failed to load orders. Please try again.", "error");
+      }
+    }
 
-      const orders = await res.json();
+    function updateStats(orders) {
+      const totalOrders = orders.length;
+      const completedOrders = orders.filter(order => order.status === 'shipped').length;
+      const inTransitOrders = orders.filter(order => ['on the way', 'pending delivery'].includes(order.status)).length;
+      const totalSpent = orders.reduce((sum, order) => sum + parseFloat(order.price || 0), 0);
+
+      document.getElementById('totalOrders').textContent = totalOrders;
+      document.getElementById('completedOrders').textContent = completedOrders;
+      document.getElementById('inTransitOrders').textContent = inTransitOrders;
+      document.getElementById('totalSpent').textContent = `$${totalSpent.toFixed(2)}`;
+    }
+
+    function renderOrders(orders) {
       const ordersList = document.getElementById("ordersList");
-      ordersList.innerHTML = "";
+      const emptyState = document.getElementById("emptyState");
 
       if (!orders || orders.length === 0) {
-        ordersList.innerHTML = `<div class="col-span-full text-center text-gray-500">You have no orders yet.</div>`;
+        ordersList.innerHTML = '';
+        emptyState.classList.remove('hidden');
         return;
       }
 
-      orders.forEach(order => {
+      emptyState.classList.add('hidden');
+
+      ordersList.innerHTML = orders.map(order => {
         const status = order.status?.toLowerCase() || "pending";
         const created = new Date(order.createdAt).toLocaleDateString();
         const stepIndex = statusSteps.indexOf(status);
+        const progress = stepIndex >= 0 ? ((stepIndex + 1) / statusSteps.length) * 100 : 0;
 
-        const progress = (stepIndex + 1) / statusSteps.length * 100;
+        return `
+          <div class="bg-white border border-slate-200 rounded-xl p-6 mb-6 hover:shadow-md transition-shadow">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+              <!-- Order Info -->
+              <div class="flex items-center space-x-4 mb-4 lg:mb-0">
+                <div class="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center overflow-hidden">
+                  <img src="${order.image}" alt="${order.product}" class="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-slate-900">${order.product}</h3>
+                  <p class="text-sm text-slate-600">Order #${order._id?.slice(-8) || 'N/A'}</p>
+                  <p class="text-sm text-slate-500">Ordered on ${created}</p>
+                </div>
+              </div>
 
-        const card = document.createElement("div");
-        card.className = "bg-white rounded-xl shadow-xl overflow-hidden transform hover:scale-[1.01] transition-all duration-300 slide-in";
+              <!-- Status & Price -->
+              <div class="flex items-center justify-between lg:flex-col lg:items-end lg:space-y-2">
+                <div class="flex items-center space-x-3">
+                  <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusColors[status] || 'bg-gray-100 text-gray-800'}">
+                    <i class="${statusIcons[status] || 'fas fa-question-circle'} mr-2"></i>
+                    ${status.charAt(0).toUpperCase() + status.slice(1)}
+                  </span>
+                  <span class="text-lg font-bold text-slate-900">$${order.price}</span>
+                </div>
 
-        card.innerHTML = `
-          <div class="h-48 bg-gray-50 flex items-center justify-center p-4">
-            <img src="${order.image}" alt="${order.product}" class="object-contain max-h-full w-auto" />
-          </div>
-          <div class="p-5">
-            <div class="flex items-center justify-between mb-2">
-              <h3 class="text-lg font-semibold">${order.product}</h3>
-              <span class="status-pill ${statusColors[status] || 'bg-gray-500 text-white'}">${status}</span>
+                <!-- Progress Bar -->
+                <div class="w-full lg:w-48 mt-3 lg:mt-0">
+                  <div class="flex justify-between text-xs text-slate-500 mb-1">
+                    ${statusSteps.map((step, i) => `
+                      <span class="${i <= stepIndex ? 'text-slate-900 font-medium' : ''}">${step}</span>
+                    `).join('')}
+                  </div>
+                  <div class="w-full bg-slate-200 rounded-full h-2">
+                    <div class="bg-slate-900 h-2 rounded-full transition-all duration-500" style="width: ${progress}%"></div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <p class="text-sm text-gray-500 mb-1">📅 Ordered: <strong>${created}</strong></p>
-            <p class="text-sm text-gray-500 mb-3">💵 Price: <strong>$${order.price}</strong></p>
 
-            <div class="relative w-full h-3 bg-gray-200 rounded-full overflow-hidden mb-2">
-              <div class="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-blue-500 to-green-400 transition-all duration-500"
-                   style="width: ${progress}%"></div>
-            </div>
-
-            <div class="flex justify-between text-xs text-gray-400">
-              ${statusSteps.map((step, i) =>
-                `<span class="${i === stepIndex ? 'text-blue-600 font-semibold' : ''}">${step}</span>`).join('')
-              }
+            <!-- Action Buttons -->
+            <div class="flex justify-end space-x-3 mt-4 pt-4 border-t border-slate-200">
+              <button onclick="showOrderStatus('${order._id}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                <i class="fas fa-eye mr-2"></i>View Details
+              </button>
+              ${status === 'shipped' ? `
+                <button onclick="downloadInvoice('${order._id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                  <i class="fas fa-download mr-2"></i>Download Invoice
+                </button>
+              ` : ''}
             </div>
           </div>
         `;
-        ordersList.appendChild(card);
-      });
-    } catch (err) {
-      console.error("Error loading orders:", err);
+      }).join('');
     }
-  }
 
-  fetchOrders();
-</script>
+    function showOrderStatus(orderId) {
+      // This would typically fetch detailed order info
+      const modal = document.getElementById('statusModal');
+      const content = document.getElementById('statusContent');
 
+      content.innerHTML = `
+        <div class="text-center">
+          <p class="text-slate-600">Detailed tracking information for order #${orderId.slice(-8)}</p>
+          <p class="text-sm text-slate-500 mt-2">This feature is coming soon!</p>
+        </div>
+      `;
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeStatusModal() {
+      document.getElementById('statusModal').classList.add('hidden');
+    }
+
+    function downloadInvoice(orderId) {
+      // This would typically generate/download an invoice
+      showNotification("Invoice download feature coming soon!", "info");
+    }
+
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm ${
+        type === 'success' ? 'bg-green-500' :
+        type === 'error' ? 'bg-red-500' :
+        type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'
+      } text-white`;
+      notification.innerHTML = `
+        <div class="flex items-center">
+          <i class="fas ${
+            type === 'success' ? 'fa-check-circle' :
+            type === 'error' ? 'fa-exclamation-circle' :
+            type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'
+          } mr-2"></i>
+          <span class="text-sm">${message}</span>
+        </div>
+      `;
+
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.remove();
+      }, 4000);
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', fetchOrders);
+  </script>
 </body>
 </html>
